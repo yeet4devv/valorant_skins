@@ -17,7 +17,6 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
 const esc = (v) => {
-  // for attribute selectors
   if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(v);
   return String(v).replace(/"/g, '\\"');
 };
@@ -78,9 +77,8 @@ function updateFavoriteCounts() {
     el.textContent = count;
     el.classList.toggle('visible', count > 0);
 
-    // bump animation
     el.classList.remove('bump');
-    void el.offsetWidth; // reflow
+    void el.offsetWidth;
     el.classList.add('bump');
   });
 }
@@ -101,7 +99,6 @@ function createFavoriteButton(skinUuid) {
 }
 
 function initFavoriteHandlers() {
-  // delegated click handler for all favorite buttons
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.favorite-btn');
     if (!btn) return;
@@ -112,12 +109,10 @@ function initFavoriteHandlers() {
     const skinUuid = btn.dataset.favSkin;
     const nowFav = toggleFavorite(skinUuid);
 
-    // update this button
     btn.classList.toggle('active', nowFav);
     btn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
     btn.title = nowFav ? 'Remove from favorites' : 'Add to favorites';
 
-    // burst effect
     if (nowFav) {
       btn.classList.remove('burst');
       void btn.offsetWidth;
@@ -125,7 +120,6 @@ function initFavoriteHandlers() {
       setTimeout(() => btn.classList.remove('burst'), 600);
     }
 
-    // sync all other buttons with the same skin UUID
     $$(`[data-fav-skin="${esc(skinUuid)}"]`).forEach((otherBtn) => {
       if (otherBtn === btn) return;
       otherBtn.classList.toggle('active', nowFav);
@@ -133,7 +127,6 @@ function initFavoriteHandlers() {
       otherBtn.title = nowFav ? 'Remove from favorites' : 'Add to favorites';
     });
 
-    // sync modal favorite button
     const modalFavBtn = $('#modalFavoriteBtn');
     if (modalFavBtn && modalFavBtn.dataset.favSkin === skinUuid) {
       modalFavBtn.classList.toggle('active', nowFav);
@@ -149,11 +142,9 @@ function initFavoriteHandlers() {
       1500
     );
 
-    // if viewing favorites filter and removed, re-render
     if (!nowFav && state.currentFilter === 'favorites') renderWeapons();
   });
 
-  // modal favorite button
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('#modalFavoriteBtn');
     if (!btn) return;
@@ -167,7 +158,6 @@ function initFavoriteHandlers() {
     btn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
     btn.querySelector('span').textContent = nowFav ? 'Remove from Favorites' : 'Add to Favorites';
 
-    // sync card buttons
     $$(`[data-fav-skin="${esc(skinUuid)}"]`).forEach((otherBtn) => {
       otherBtn.classList.toggle('active', nowFav);
       otherBtn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
@@ -183,7 +173,6 @@ function initFavoriteHandlers() {
   updateFavoriteCounts();
 }
 
-// find a skin by UUID across all weapons
 function findSkinByUuid(uuid) {
   for (const weapon of state.weapons) {
     if (!weapon.skins) continue;
@@ -701,6 +690,14 @@ function setSearch(query) {
   renderWeapons();
 }
 
+function setSort(sortBy) {
+  state.sortBy = sortBy || 'name';
+  const sortSelect = $('#sortSelect');
+  if (sortSelect) sortSelect.value = state.sortBy;
+  updateURLFromState();
+  renderWeapons();
+}
+
 function applyStateFromURL() {
   const url = new URL(window.location.href);
   const filter = url.searchParams.get('filter') || 'all';
@@ -722,6 +719,133 @@ window.addEventListener('popstate', () => {
   applyStateFromURL();
   renderWeapons();
 });
+
+// ===== APPLIED FILTERS (CHIPS) + RESULTS COUNT =====
+function setToolbarVisible(visible) {
+  const t = $('#skinsToolbar');
+  if (!t) return;
+  t.style.display = visible ? '' : 'none';
+}
+
+function labelForFilter(filter) {
+  const m = {
+    all: 'All',
+    favorites: 'Favorites',
+    melee: 'Melee',
+    sidearm: 'Sidearm',
+    smg: 'SMG',
+    rifle: 'Rifle',
+    sniper: 'Sniper',
+    shotgun: 'Shotgun',
+    heavy: 'Heavy',
+  };
+  return m[filter] || filter;
+}
+
+function labelForSort(sortBy) {
+  if (sortBy === 'skins') return 'Sort: Skin Count';
+  return 'Sort: Name';
+}
+
+function renderToolbar({ mode, count }) {
+  const resultsEl = $('#resultsCount');
+  const filtersEl = $('#appliedFilters');
+  if (!resultsEl || !filtersEl) return;
+
+  setToolbarVisible(true);
+
+  if (mode === 'favorites') resultsEl.textContent = `Showing ${count} favorites`;
+  else resultsEl.textContent = `Showing ${count} weapons`;
+
+  const chips = [];
+
+  if (state.currentFilter !== 'all') {
+    chips.push({
+      label: labelForFilter(state.currentFilter),
+      action: 'remove-filter',
+    });
+  }
+
+  if (state.searchQuery) {
+    chips.push({
+      label: `Search: ${state.searchQuery}`,
+      action: 'remove-search',
+    });
+  }
+
+  if (state.sortBy !== 'name') {
+    chips.push({
+      label: labelForSort(state.sortBy),
+      action: 'remove-sort',
+    });
+  }
+
+  const chipsHTML = chips
+    .map(
+      (c) => `
+      <button class="filter-chip" type="button" data-ui-action="${c.action}">
+        <span>${c.label}</span>
+        <i class="fas fa-times"></i>
+      </button>
+    `
+    )
+    .join('');
+
+  const resetHTML =
+    chips.length > 0
+      ? `
+      <button class="chip-reset" type="button" data-ui-action="reset-all">
+        <i class="fas fa-rotate-left"></i>
+        <span>Reset</span>
+      </button>
+    `
+      : '';
+
+  filtersEl.innerHTML = chipsHTML + resetHTML;
+}
+
+function initUIActions() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ui-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.uiAction;
+
+    if (action === 'remove-filter') {
+      setFilter('all');
+      return;
+    }
+
+    if (action === 'remove-search') {
+      setSearchInputsValue('');
+      setSearch('');
+      return;
+    }
+
+    if (action === 'remove-sort') {
+      setSort('name');
+      return;
+    }
+
+    if (action === 'clear-search') {
+      setSearchInputsValue('');
+      setSearch('');
+      return;
+    }
+
+    if (action === 'reset-all') {
+      state.currentFilter = 'all';
+      state.searchQuery = '';
+      state.sortBy = 'name';
+      setActiveFilterLinks('all');
+      setSearchInputsValue('');
+      const sortSelect = $('#sortSelect');
+      if (sortSelect) sortSelect.value = 'name';
+      updateURLFromState();
+      renderWeapons();
+    }
+  });
+}
 
 // ===== NAVBAR =====
 function initNavbar() {
@@ -798,12 +922,7 @@ function initSort() {
   if (!sortSelect) return;
 
   sortSelect.value = state.sortBy || 'name';
-
-  sortSelect.addEventListener('change', () => {
-    state.sortBy = sortSelect.value;
-    updateURLFromState();
-    renderWeapons();
-  });
+  sortSelect.addEventListener('change', () => setSort(sortSelect.value));
 }
 
 function getWeaponCategory(c) {
@@ -819,7 +938,6 @@ function getWeaponCategory(c) {
   return 'other';
 }
 
-// ===== STAGGER OBSERVER (single definition) =====
 function createStaggerObserver(containerSelector) {
   let rq = [],
     rt = null;
@@ -1007,7 +1125,6 @@ function renderBundles() {
     )
     .join('');
 
-  // Bundle click -> apply search filter by bundle name
   $$('.bundle-card').forEach((card) => {
     card.addEventListener('click', () => {
       const name = card.dataset.bundleName || '';
@@ -1029,21 +1146,21 @@ function renderBundles() {
 function renderWeapons() {
   const container = $('#weaponsGrid');
 
-  // Favorites filter — show individual skins
   if (state.currentFilter === 'favorites') {
     renderFavorites(container);
-    updateURLFromState();
     return;
   }
 
   let weapons = [...state.weapons];
 
   if (!weapons.length && !state.loadError) {
+    setToolbarVisible(false);
     container.innerHTML = generateWeaponSkeletons(8);
     return;
   }
 
   if (!weapons.length && state.loadError) {
+    setToolbarVisible(false);
     if (!container.querySelector('.error-state'))
       container.innerHTML = generateErrorHTML('weapons', 'No weapon data');
     return;
@@ -1065,7 +1182,6 @@ function renderWeapons() {
     );
   }
 
-  // Sorting
   if (state.sortBy === 'name') {
     weapons.sort((a, b) => a.displayName.localeCompare(b.displayName));
   } else if (state.sortBy === 'skins') {
@@ -1085,8 +1201,18 @@ function renderWeapons() {
         <i class="fas fa-search"></i>
         <h3>No weapons found</h3>
         <p>Try a different search or filter</p>
+        <div class="no-results-actions">
+          <button class="error-retry-btn" type="button" data-ui-action="clear-search">
+            <i class="fas fa-eraser"></i><span>Clear search</span>
+          </button>
+          <button class="error-retry-btn" type="button" data-ui-action="reset-all">
+            <i class="fas fa-rotate-left"></i><span>Reset all</span>
+          </button>
+        </div>
       </div>
     `;
+    renderToolbar({ mode: 'weapons', count: 0 });
+    updateURLFromState();
     return;
   }
 
@@ -1127,11 +1253,15 @@ function renderWeapons() {
     });
   });
 
+  renderToolbar({ mode: 'weapons', count: weapons.length });
   updateURLFromState();
 }
 
 // ===== RENDER FAVORITES =====
 function renderFavorites(container) {
+  // show toolbar even if empty
+  renderToolbar({ mode: 'favorites', count: 0 });
+
   if (state.favorites.length === 0) {
     container.innerHTML = `
       <div class="favorites-empty">
@@ -1140,6 +1270,7 @@ function renderFavorites(container) {
         <p>Click the heart icon on any skin to add it to your favorites collection. Your picks are saved locally.</p>
       </div>
     `;
+    updateURLFromState();
     return;
   }
 
@@ -1157,6 +1288,8 @@ function renderFavorites(container) {
         <p>Your favorited skins will appear here once weapon data loads.</p>
       </div>
     `;
+    renderToolbar({ mode: 'favorites', count: 0 });
+    updateURLFromState();
     return;
   }
 
@@ -1175,8 +1308,18 @@ function renderFavorites(container) {
         <i class="fas fa-search"></i>
         <h3>No matching favorites</h3>
         <p>Try a different search term</p>
+        <div class="no-results-actions">
+          <button class="error-retry-btn" type="button" data-ui-action="clear-search">
+            <i class="fas fa-eraser"></i><span>Clear search</span>
+          </button>
+          <button class="error-retry-btn" type="button" data-ui-action="reset-all">
+            <i class="fas fa-rotate-left"></i><span>Reset all</span>
+          </button>
+        </div>
       </div>
     `;
+    renderToolbar({ mode: 'favorites', count: 0 });
+    updateURLFromState();
     return;
   }
 
@@ -1230,6 +1373,7 @@ function renderFavorites(container) {
     });
   });
 
+  renderToolbar({ mode: 'favorites', count: filtered.length });
   updateURLFromState();
 }
 
@@ -1333,10 +1477,9 @@ function openSkinModal(skin, weaponName) {
   $('#modalTitle').textContent = skin.displayName;
   $('#modalWeapon').textContent = weaponName;
 
-  // modal favorite button
+  // Modal favorite button
   const modalFavBtn = $('#modalFavoriteBtn');
   const fav = isFavorite(skin.uuid);
-
   modalFavBtn.dataset.favSkin = skin.uuid;
   modalFavBtn.classList.toggle('active', fav);
   modalFavBtn.querySelector('i').className = fav ? 'fas fa-heart' : 'far fa-heart';
@@ -1344,7 +1487,7 @@ function openSkinModal(skin, weaponName) {
     ? 'Remove from Favorites'
     : 'Add to Favorites';
 
-  // video
+  // Video
   const videoSection = $('#modalVideoSection');
   const tabsContainer = $('#videoLevelTabs');
   const lvlVid = (skin.levels || []).filter((l) => l.streamedVideo);
@@ -1360,7 +1503,6 @@ function openSkinModal(skin, weaponName) {
               .replace(/([A-Z])/g, ' $1')
               .trim()
           : '';
-
         return `<button class="video-level-tab ${i === 0 ? 'active' : ''}" data-video-url="${
           l.streamedVideo
         }"><span class="tab-level-num">${li + 1}</span><span>${type || l.displayName || `Level ${li + 1}`}</span></button>`;
@@ -1382,9 +1524,9 @@ function openSkinModal(skin, weaponName) {
     videoSection.style.display = 'none';
   }
 
-  // chromas
-  const chromasC = $('#modalChromas'),
-    chromasG = $('#chromasGrid');
+  // Chromas
+  const chromasC = $('#modalChromas');
+  const chromasG = $('#chromasGrid');
 
   if (skin.chromas && skin.chromas.length > 1) {
     chromasC.style.display = 'block';
@@ -1393,7 +1535,6 @@ function openSkinModal(skin, weaponName) {
       .map((ch, i) => {
         const img = ch.displayIcon || ch.fullRender || skin.displayIcon || '';
         const sw = ch.swatch ? `background-image:url(${ch.swatch})` : '';
-
         return `
           <div class="chroma-item ${i === 0 ? 'active' : ''}" data-img="${img}">
             ${
@@ -1430,9 +1571,9 @@ function openSkinModal(skin, weaponName) {
     chromasC.style.display = 'none';
   }
 
-  // levels
-  const levelsC = $('#modalLevels'),
-    levelsL = $('#levelsList');
+  // Levels
+  const levelsC = $('#modalLevels');
+  const levelsL = $('#levelsList');
 
   if (skin.levels && skin.levels.length > 1) {
     levelsC.style.display = 'block';
@@ -1445,7 +1586,6 @@ function openSkinModal(skin, weaponName) {
               .replace(/([A-Z])/g, ' $1')
               .trim()
           : '';
-
         const hv = !!l.streamedVideo;
 
         return `
@@ -1606,6 +1746,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyStateFromURL();
   initNavbar();
   initSort();
+  initUIActions();
 
   initModals();
   initSmoothScroll();
