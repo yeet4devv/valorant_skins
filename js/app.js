@@ -79,7 +79,7 @@ function updateFavoriteCounts() {
   });
 }
 
-function createFavoriteButton(skinUuid, size = "normal") {
+function createFavoriteButton(skinUuid) {
   const isActive = isFavorite(skinUuid);
   const iconClass = isActive ? "fas fa-heart" : "far fa-heart";
   return `
@@ -670,41 +670,6 @@ function getWeaponCategory(c) {
   return "other";
 }
 
-function createStaggerObserver(sel) {
-  let q = [],
-    t = null;
-  const flush = () => {
-    q.forEach((c, i) => {
-      const con = document.querySelector(sel);
-      let cols = 1;
-      if (con) {
-        const s = getComputedStyle(con).getPropertyValue(
-          "grid-template-columns",
-        );
-        if (s && s !== "none") cols = s.split(" ").length;
-      }
-      const d = Math.floor(i / cols) * 120 + (i % cols) * 60;
-      c.style.transitionDelay = `${d}ms`;
-      c.classList.add("visible");
-      setTimeout(() => (c.style.transitionDelay = ""), d + 600);
-    });
-    q = [];
-  };
-  return new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          q.push(e.target);
-          e.target && e.target.parentNode;
-        }
-      });
-      clearTimeout(t);
-      t = setTimeout(flush, 50);
-    },
-    { threshold: 0.05, rootMargin: "0px 0px -40px 0px" },
-  );
-}
-
 // Fix stagger
 function createStaggerObserver(containerSelector) {
   let rq = [],
@@ -1014,7 +979,6 @@ function renderFavorites(container) {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".favorite-btn")) return;
       const skinUuid = card.dataset.favClickSkin;
-      const weaponName = card.dataset.favClickWeapon;
       if (skinUuid) {
         const result = findSkinByUuid(skinUuid);
         if (result) openSkinModal(result.skin, result.weaponName);
