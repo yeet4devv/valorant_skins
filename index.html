@@ -1,191 +1,423 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VALORANT Skin Showcase</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://valorant-api.com">
-    <link rel="preconnect" href="https://media.valorant-api.com" crossorigin>
-</head>
-<body>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://valorant-api.com" />
+    <link rel="preconnect" href="https://media.valorant-api.com" crossorigin />
+  </head>
+  <body>
     <div id="loader" class="loader">
-        <div class="loader-content">
-            <div class="loader-logo">
-                <svg viewBox="0 0 100 100" class="valorant-logo-svg">
-                    <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="none" stroke="#ff4655" stroke-width="2"/>
-                    <text x="50" y="58" text-anchor="middle" fill="#ff4655" font-size="24" font-family="Oswald">V</text>
-                </svg>
-            </div>
-            <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-            <p class="loader-text">Loading Arsenal...</p>
+      <div class="loader-content">
+        <div class="loader-logo">
+          <svg viewBox="0 0 100 100" class="valorant-logo-svg">
+            <polygon
+              points="50,5 95,30 95,70 50,95 5,70 5,30"
+              fill="none"
+              stroke="#ff4655"
+              stroke-width="2"
+            />
+            <text
+              x="50"
+              y="58"
+              text-anchor="middle"
+              fill="#ff4655"
+              font-size="24"
+              font-family="Oswald"
+            >
+              V
+            </text>
+          </svg>
         </div>
+        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+        <p class="loader-text">Loading Arsenal...</p>
+      </div>
     </div>
 
     <div class="cursor-glow" id="cursorGlow"></div>
 
     <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 100 100" width="40" height="40">
-                        <polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="none" stroke="#ff4655" stroke-width="3"/>
-                        <text x="50" y="60" text-anchor="middle" fill="#ff4655" font-size="28" font-family="Oswald" font-weight="700">V</text>
-                    </svg>
-                </div>
-                <span class="logo-text">ARSENAL</span>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active" data-filter="all">All Skins</a>
-                <a href="#" class="nav-link" data-filter="favorites"><i class="fas fa-heart" style="font-size:12px;margin-right:4px"></i>Favorites<span class="nav-fav-count" id="navFavCount">0</span></a>
-                <a href="#" class="nav-link" data-filter="melee">Melee</a>
-                <a href="#" class="nav-link" data-filter="sidearm">Sidearm</a>
-                <a href="#" class="nav-link" data-filter="smg">SMG</a>
-                <a href="#" class="nav-link" data-filter="rifle">Rifle</a>
-                <a href="#" class="nav-link" data-filter="sniper">Sniper</a>
-                <a href="#" class="nav-link" data-filter="shotgun">Shotgun</a>
-                <a href="#" class="nav-link" data-filter="heavy">Heavy</a>
-            </div>
-            <div class="nav-search">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search skins...">
-                </div>
-            </div>
-            <button class="mobile-menu-btn" id="mobileMenuBtn"><span></span><span></span><span></span></button>
+      <div class="nav-container">
+        <div class="nav-logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 100 100" width="40" height="40">
+              <polygon
+                points="50,5 95,30 95,70 50,95 5,70 5,30"
+                fill="none"
+                stroke="#ff4655"
+                stroke-width="3"
+              />
+              <text
+                x="50"
+                y="60"
+                text-anchor="middle"
+                fill="#ff4655"
+                font-size="28"
+                font-family="Oswald"
+                font-weight="700"
+              >
+                V
+              </text>
+            </svg>
+          </div>
+          <span class="logo-text">ARSENAL</span>
         </div>
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-search"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="mobileSearchInput" placeholder="Search skins..."></div></div>
-            <a href="#" class="mobile-link active" data-filter="all">All Skins</a>
-            <a href="#" class="mobile-link" data-filter="favorites"><i class="fas fa-heart" style="font-size:12px;margin-right:4px"></i>Favorites<span class="nav-fav-count" id="mobileFavCount">0</span></a>
-            <a href="#" class="mobile-link" data-filter="melee">Melee</a>
-            <a href="#" class="mobile-link" data-filter="sidearm">Sidearm</a>
-            <a href="#" class="mobile-link" data-filter="smg">SMG</a>
-            <a href="#" class="mobile-link" data-filter="rifle">Rifle</a>
-            <a href="#" class="mobile-link" data-filter="sniper">Sniper</a>
-            <a href="#" class="mobile-link" data-filter="shotgun">Shotgun</a>
-            <a href="#" class="mobile-link" data-filter="heavy">Heavy</a>
+        <div class="nav-links">
+          <a href="#" class="nav-link active" data-filter="all">All Skins</a>
+          <a href="#" class="nav-link" data-filter="favorites"
+            ><i
+              class="fas fa-heart"
+              style="font-size: 12px; margin-right: 4px"
+            ></i
+            >Favorites<span class="nav-fav-count" id="navFavCount">0</span></a
+          >
+          <a href="#" class="nav-link" data-filter="melee">Melee</a>
+          <a href="#" class="nav-link" data-filter="sidearm">Sidearm</a>
+          <a href="#" class="nav-link" data-filter="smg">SMG</a>
+          <a href="#" class="nav-link" data-filter="rifle">Rifle</a>
+          <a href="#" class="nav-link" data-filter="sniper">Sniper</a>
+          <a href="#" class="nav-link" data-filter="shotgun">Shotgun</a>
+          <a href="#" class="nav-link" data-filter="heavy">Heavy</a>
         </div>
+        <div class="nav-search">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search skins..." />
+          </div>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-search">
+          <div class="search-box">
+            <i class="fas fa-search"></i
+            ><input
+              type="text"
+              id="mobileSearchInput"
+              placeholder="Search skins..."
+            />
+          </div>
+        </div>
+        <a href="#" class="mobile-link active" data-filter="all">All Skins</a>
+        <a href="#" class="mobile-link" data-filter="favorites"
+          ><i
+            class="fas fa-heart"
+            style="font-size: 12px; margin-right: 4px"
+          ></i
+          >Favorites<span class="nav-fav-count" id="mobileFavCount">0</span></a
+        >
+        <a href="#" class="mobile-link" data-filter="melee">Melee</a>
+        <a href="#" class="mobile-link" data-filter="sidearm">Sidearm</a>
+        <a href="#" class="mobile-link" data-filter="smg">SMG</a>
+        <a href="#" class="mobile-link" data-filter="rifle">Rifle</a>
+        <a href="#" class="mobile-link" data-filter="sniper">Sniper</a>
+        <a href="#" class="mobile-link" data-filter="shotgun">Shotgun</a>
+        <a href="#" class="mobile-link" data-filter="heavy">Heavy</a>
+      </div>
     </nav>
 
     <section class="hero" id="hero">
-        <div class="hero-particles" id="heroParticles"></div>
-        <div class="hero-bg-image" id="heroFeatured"></div>
-        <div class="hero-inner">
-            <div class="hero-content">
-                <div class="hero-badge"><span class="badge-dot"></span>VALORANT COLLECTION</div>
-                <h1 class="hero-title">
-                    <span class="title-line">EXPLORE THE</span>
-                    <span class="title-line highlight">ULTIMATE</span>
-                    <span class="title-line">SKIN ARSENAL</span>
-                </h1>
-                <p class="hero-description">Browse through every weapon skin in VALORANT. Discover rare collections, stunning designs, and find your next favorite skin.</p>
-                <div class="hero-stats">
-                    <div class="stat"><span class="stat-number" id="totalSkins">0</span><span class="stat-label">Total Skins</span></div>
-                    <div class="stat-divider"></div>
-                    <div class="stat"><span class="stat-number" id="totalWeapons">0</span><span class="stat-label">Weapons</span></div>
-                    <div class="stat-divider"></div>
-                    <div class="stat"><span class="stat-number" id="totalBundles">0</span><span class="stat-label">Collections</span></div>
-                </div>
-                <a href="#skins" class="hero-cta"><span>Explore Skins</span><i class="fas fa-arrow-down"></i></a>
+      <div class="hero-particles" id="heroParticles"></div>
+      <div class="hero-bg-image" id="heroFeatured"></div>
+      <div class="hero-inner">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>VALORANT COLLECTION
+          </div>
+          <h1 class="hero-title">
+            <span class="title-line">EXPLORE THE</span>
+            <span class="title-line highlight">ULTIMATE</span>
+            <span class="title-line">SKIN ARSENAL</span>
+          </h1>
+          <p class="hero-description">
+            Browse through every weapon skin in VALORANT. Discover rare
+            collections, stunning designs, and find your next favorite skin.
+          </p>
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-number" id="totalSkins">0</span
+              ><span class="stat-label">Total Skins</span>
             </div>
-            <div class="scroll-indicator"><div class="mouse"><div class="mouse-wheel"></div></div><span>Scroll Down</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <span class="stat-number" id="totalWeapons">0</span
+              ><span class="stat-label">Weapons</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <span class="stat-number" id="totalBundles">0</span
+              ><span class="stat-label">Collections</span>
+            </div>
+          </div>
+          <a href="#skins" class="hero-cta"
+            ><span>Explore Skins</span><i class="fas fa-arrow-down"></i
+          ></a>
         </div>
+        <div class="scroll-indicator">
+          <div class="mouse"><div class="mouse-wheel"></div></div>
+          <span>Scroll Down</span>
+        </div>
+      </div>
     </section>
 
     <section class="bundles-section" id="bundles">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">FEATURED</span>
-                <h2 class="section-title">Popular Collections</h2>
-                <p class="section-subtitle">Discover the most iconic weapon skin bundles in VALORANT</p>
-            </div>
-            <div class="bundles-carousel" id="bundlesCarousel">
-                <div class="skeleton-card bundle-skeleton"><div class="skeleton skeleton-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div></div>
-                <div class="skeleton-card bundle-skeleton"><div class="skeleton skeleton-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div></div>
-                <div class="skeleton-card bundle-skeleton"><div class="skeleton skeleton-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div></div>
-                <div class="skeleton-card bundle-skeleton"><div class="skeleton skeleton-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div></div>
-            </div>
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">FEATURED</span>
+          <h2 class="section-title">Popular Collections</h2>
+          <p class="section-subtitle">
+            Discover the most iconic weapon skin bundles in VALORANT
+          </p>
         </div>
+        <div class="bundles-carousel" id="bundlesCarousel">
+          <div class="skeleton-card bundle-skeleton">
+            <div class="skeleton skeleton-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text"></div>
+            </div>
+          </div>
+          <div class="skeleton-card bundle-skeleton">
+            <div class="skeleton skeleton-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text"></div>
+            </div>
+          </div>
+          <div class="skeleton-card bundle-skeleton">
+            <div class="skeleton skeleton-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text"></div>
+            </div>
+          </div>
+          <div class="skeleton-card bundle-skeleton">
+            <div class="skeleton skeleton-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="skins-section" id="skins">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">WEAPONS</span>
-                <h2 class="section-title">Weapon Skins</h2>
-                <p class="section-subtitle">Select a weapon to explore all available skins</p>
-            </div>
-            <div class="weapons-grid" id="weaponsGrid">
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-                <div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>
-            </div>
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tag">WEAPONS</span>
+          <h2 class="section-title">Weapon Skins</h2>
+          <p class="section-subtitle">
+            Select a weapon to explore all available skins
+          </p>
         </div>
+        <div class="weapons-grid" id="weaponsGrid">
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+          <div class="skeleton-card weapon-skeleton">
+            <div class="skeleton skeleton-weapon-image"></div>
+            <div class="skeleton-info">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text-short"></div>
+              <div class="skeleton skeleton-badge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="skinModal">
-            <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
-            <div class="modal-content">
-                <div class="modal-hero"><div class="modal-image-container"><img src="" alt="" id="modalImage" class="modal-image"></div></div>
-                <div class="modal-info">
-                    <h2 class="modal-title" id="modalTitle"></h2>
-                    <p class="modal-weapon" id="modalWeapon"></p>
-                    <button class="modal-favorite-btn" id="modalFavoriteBtn"><i class="far fa-heart"></i><span>Add to Favorites</span></button>
-                    <div class="modal-video-section" id="modalVideoSection">
-                        <h3>Preview</h3>
-                        <div class="video-player" id="videoPlayer">
-                            <video id="videoElement" preload="metadata" playsinline><source id="videoSource" src="" type="video/mp4"></video>
-                            <div class="video-overlay" id="videoOverlay"><button class="video-play-btn" id="videoPlayBtn"><i class="fas fa-play"></i></button><p class="video-hint">Click to play preview</p></div>
-                            <div class="video-controls" id="videoControls">
-                                <button class="video-ctrl-btn" id="videoCtrlPlay"><i class="fas fa-play"></i></button>
-                                <div class="video-progress" id="videoProgress"><div class="video-progress-filled" id="videoProgressFilled"></div><div class="video-progress-handle" id="videoProgressHandle"></div></div>
-                                <span class="video-time" id="videoTime">0:00 / 0:00</span>
-                                <button class="video-ctrl-btn" id="videoCtrlMute"><i class="fas fa-volume-up"></i></button>
-                                <button class="video-ctrl-btn" id="videoCtrlFullscreen"><i class="fas fa-expand"></i></button>
-                            </div>
-                            <div class="video-loading" id="videoLoading"><div class="video-spinner"></div></div>
-                        </div>
-                        <div class="video-level-tabs" id="videoLevelTabs"></div>
-                    </div>
-                    <div class="modal-chromas" id="modalChromas"><h3>Chromas</h3><div class="chromas-grid" id="chromasGrid"></div></div>
-                    <div class="modal-levels" id="modalLevels"><h3>Levels</h3><div class="levels-list" id="levelsList"></div></div>
-                </div>
+      <div class="modal" id="skinModal">
+        <button class="modal-close" id="modalClose">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="modal-content">
+          <div class="modal-hero">
+            <div class="modal-image-container">
+              <img src="" alt="" id="modalImage" class="modal-image" />
             </div>
+          </div>
+          <div class="modal-info">
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <p class="modal-weapon" id="modalWeapon"></p>
+            <button class="modal-favorite-btn" id="modalFavoriteBtn">
+              <i class="far fa-heart"></i><span>Add to Favorites</span>
+            </button>
+            <div class="modal-video-section" id="modalVideoSection">
+              <h3>Preview</h3>
+              <div class="video-player" id="videoPlayer">
+                <video id="videoElement" preload="metadata" playsinline>
+                  <source id="videoSource" src="" type="video/mp4" />
+                </video>
+                <div class="video-overlay" id="videoOverlay">
+                  <button class="video-play-btn" id="videoPlayBtn">
+                    <i class="fas fa-play"></i>
+                  </button>
+                  <p class="video-hint">Click to play preview</p>
+                </div>
+                <div class="video-controls" id="videoControls">
+                  <button class="video-ctrl-btn" id="videoCtrlPlay">
+                    <i class="fas fa-play"></i>
+                  </button>
+                  <div class="video-progress" id="videoProgress">
+                    <div
+                      class="video-progress-filled"
+                      id="videoProgressFilled"
+                    ></div>
+                    <div
+                      class="video-progress-handle"
+                      id="videoProgressHandle"
+                    ></div>
+                  </div>
+                  <span class="video-time" id="videoTime">0:00 / 0:00</span>
+                  <button class="video-ctrl-btn" id="videoCtrlMute">
+                    <i class="fas fa-volume-up"></i>
+                  </button>
+                  <button class="video-ctrl-btn" id="videoCtrlFullscreen">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+                <div class="video-loading" id="videoLoading">
+                  <div class="video-spinner"></div>
+                </div>
+              </div>
+              <div class="video-level-tabs" id="videoLevelTabs"></div>
+            </div>
+            <div class="modal-chromas" id="modalChromas">
+              <h3>Chromas</h3>
+              <div class="chromas-grid" id="chromasGrid"></div>
+            </div>
+            <div class="modal-levels" id="modalLevels">
+              <h3>Levels</h3>
+              <div class="levels-list" id="levelsList"></div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <div class="modal-overlay" id="weaponModalOverlay">
-        <div class="weapon-modal" id="weaponModal">
-            <button class="modal-close" id="weaponModalClose"><i class="fas fa-times"></i></button>
-            <div class="weapon-modal-header"><img src="" alt="" id="weaponModalImage" class="weapon-modal-img"><h2 id="weaponModalTitle"></h2></div>
-            <div class="weapon-skins-grid" id="weaponSkinsGrid"></div>
+      <div class="weapon-modal" id="weaponModal">
+        <button class="modal-close" id="weaponModalClose">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="weapon-modal-header">
+          <img src="" alt="" id="weaponModalImage" class="weapon-modal-img" />
+          <h2 id="weaponModalTitle"></h2>
         </div>
+        <div class="weapon-skins-grid" id="weaponSkinsGrid"></div>
+      </div>
     </div>
 
-    <button class="back-to-top" id="backToTop"><i class="fas fa-chevron-up"></i></button>
+    <button class="back-to-top" id="backToTop">
+      <i class="fas fa-chevron-up"></i>
+    </button>
 
     <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <svg viewBox="0 0 100 100" width="50" height="50"><polygon points="50,5 95,30 95,70 50,95 5,70 5,30" fill="none" stroke="#ff4655" stroke-width="3"/><text x="50" y="60" text-anchor="middle" fill="#ff4655" font-size="28" font-family="Oswald" font-weight="700">V</text></svg>
-                    <span>ARSENAL</span>
-                </div>
-                <p class="footer-text">This is a fan-made project. VALORANT is a registered trademark of Riot Games. All skin images and data are property of Riot Games.</p>
-                <p class="footer-credit">Powered by <a href="https://valorant-api.com" target="_blank">valorant-api.com</a></p>
-            </div>
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <svg viewBox="0 0 100 100" width="50" height="50">
+              <polygon
+                points="50,5 95,30 95,70 50,95 5,70 5,30"
+                fill="none"
+                stroke="#ff4655"
+                stroke-width="3"
+              />
+              <text
+                x="50"
+                y="60"
+                text-anchor="middle"
+                fill="#ff4655"
+                font-size="28"
+                font-family="Oswald"
+                font-weight="700"
+              >
+                V
+              </text>
+            </svg>
+            <span>ARSENAL</span>
+          </div>
+          <p class="footer-text">
+            This is a fan-made project. VALORANT is a registered trademark of
+            Riot Games. All skin images and data are property of Riot Games.
+          </p>
+          <p class="footer-credit">
+            Powered by
+            <a href="https://valorant-api.com" target="_blank"
+              >valorant-api.com</a
+            >
+          </p>
         </div>
+      </div>
     </footer>
 
     <script src="js/app.js"></script>
-</body>
+  </body>
 </html>
