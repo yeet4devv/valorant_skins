@@ -1,10 +1,11 @@
-[![CI](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml/badge.svg)](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml)
+﻿[![CI](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml/badge.svg)](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-ff4655)](https://yeet4devv.github.io/valorant_skins/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
 
 # V ARSENAL — VALORANT Skin Showcase
 
-Fan-made bir **VALORANT skin arşivi** web uygulaması. VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinamik olarak listeler; skin detaylarında **Chromas**, **Levels** ve varsa **Video Preview** gösterir.
+Fan-made bir **VALORANT skin arşivi** web uygulaması.  
+VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinamik olarak listeler; skin detaylarında **Chromas**, **Levels** ve varsa **Video Preview** gösterir.
 
 > Disclaimer: This is a fan-made project. VALORANT is a registered trademark of Riot Games. All skin images and data are property of Riot Games.
 
@@ -25,21 +26,18 @@ https://yeet4devv.github.io/valorant_skins/
   - Levels
   - Streamed video preview (varsa)
 - Skeleton loading, error state ve retry akışı
-- Responsive tasarım + `prefers-reduced-motion` desteği
+- Responsive tasarım + prefers-reduced-motion desteği
 
 ## Tech Stack
 - HTML / CSS / JavaScript (Vanilla)
 - Data Source: https://valorant-api.com
-- Icons: Font Awesome
-- Fonts: Google Fonts (Rajdhani, Oswald)
 
-## Project Structure
-```txt
-valorant_skins/
-├─ index.html
-├─ css/
-│  └─ style.css
-├─ js/
-│  └─ app.js
-└─ assets/
-   └─ preview.png
+## Run Locally
+`ash
+git clone https://github.com/yeet4devv/valorant_skins.git
+cd valorant_skins
+python -m http.server 5500
+Open: http://localhost:5500
+
+License
+MIT — see LICENSE
