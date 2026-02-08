@@ -10,7 +10,6 @@ The project focuses on **performance, clean architecture, and data-driven UI des
 ## 🚀 Live Demo
 
 🔗 https://yeet4devv.github.io/valorant_skins  
-*(Replace with your live URL if different)*
 
 ---
 
