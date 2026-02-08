@@ -33,7 +33,7 @@ html {
 }
 
 body {
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-primary);
   overflow-x: hidden;
@@ -60,11 +60,7 @@ body {
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 70, 85, 0.08) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(255, 70, 85, 0.08) 0%, transparent 70%);
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
@@ -228,7 +224,7 @@ body:hover .cursor-glow {
 }
 
 .logo-text {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 4px;
@@ -265,7 +261,7 @@ body:hover .cursor-glow {
 }
 
 .nav-link.active::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 2px;
   left: 50%;
@@ -300,7 +296,7 @@ body:hover .cursor-glow {
   border-radius: 8px;
   padding: 10px 16px 10px 38px;
   color: var(--text-primary);
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 14px;
   width: 200px;
   transition: all var(--transition-normal);
@@ -395,25 +391,17 @@ body:hover .cursor-glow {
 }
 
 .hero::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(
-      ellipse at 20% 50%,
-      rgba(255, 70, 85, 0.08) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 20%,
-      rgba(100, 50, 255, 0.05) 0%,
-      transparent 50%
-    );
+    radial-gradient(ellipse at 20% 50%, rgba(255, 70, 85, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(100, 50, 255, 0.05) 0%, transparent 50%);
   z-index: 1;
 }
 
 .hero::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   left: 0;
@@ -543,7 +531,7 @@ body:hover .cursor-glow {
 }
 
 .hero-title {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: clamp(40px, 7vw, 80px);
   font-weight: 700;
   line-height: 1.05;
@@ -571,7 +559,7 @@ body:hover .cursor-glow {
 }
 
 .title-line::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -640,7 +628,7 @@ body:hover .cursor-glow {
 
 .stat-number {
   display: block;
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 36px;
   font-weight: 700;
   color: var(--primary);
@@ -670,7 +658,7 @@ body:hover .cursor-glow {
   background: var(--gradient-1);
   color: white;
   text-decoration: none;
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 3px;
@@ -686,15 +674,10 @@ body:hover .cursor-glow {
 }
 
 .hero-cta::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s;
 }
@@ -868,7 +851,7 @@ body:hover .cursor-glow {
 }
 
 .section-title {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 700;
   letter-spacing: 2px;
@@ -905,7 +888,7 @@ body:hover .cursor-glow {
 }
 
 .bundle-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(255, 70, 85, 0.05), transparent);
@@ -924,11 +907,7 @@ body:hover .cursor-glow {
   object-fit: contain;
   padding: 20px;
   transition: transform var(--transition-slow);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 70, 85, 0.03),
-    rgba(100, 50, 255, 0.03)
-  );
+  background: linear-gradient(135deg, rgba(255, 70, 85, 0.03), rgba(100, 50, 255, 0.03));
 }
 
 .bundle-info {
@@ -938,7 +917,7 @@ body:hover .cursor-glow {
 }
 
 .bundle-name {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -992,7 +971,7 @@ body:hover .cursor-glow {
 }
 
 .weapon-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -1009,14 +988,10 @@ body:hover .cursor-glow {
 }
 
 .weapon-card::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(255, 70, 85, 0.06),
-    transparent 70%
-  );
+  background: radial-gradient(circle at 50% 0%, rgba(255, 70, 85, 0.06), transparent 70%);
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
@@ -1049,7 +1024,7 @@ body:hover .cursor-glow {
 }
 
 .weapon-card-name {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -1148,11 +1123,7 @@ body:hover .cursor-glow {
 
 .modal-hero {
   padding: 40px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 70, 85, 0.05),
-    rgba(100, 50, 255, 0.03)
-  );
+  background: linear-gradient(135deg, rgba(255, 70, 85, 0.05), rgba(100, 50, 255, 0.03));
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -1190,7 +1161,7 @@ body:hover .cursor-glow {
 }
 
 .modal-title {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -1207,7 +1178,7 @@ body:hover .cursor-glow {
 
 .modal-chromas h3,
 .modal-levels h3 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -1293,7 +1264,7 @@ body:hover .cursor-glow {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
   color: var(--primary);
   flex-shrink: 0;
@@ -1354,7 +1325,7 @@ body:hover .cursor-glow {
 }
 
 .weapon-modal-header h2 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -1378,14 +1349,10 @@ body:hover .cursor-glow {
 }
 
 .skin-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 0,
-    rgba(255, 70, 85, 0.08),
-    transparent 70%
-  );
+  background: radial-gradient(circle at 50% 0, rgba(255, 70, 85, 0.08), transparent 70%);
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
@@ -1506,7 +1473,7 @@ body:hover .cursor-glow {
 }
 
 .footer-logo span {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 4px;
@@ -1548,7 +1515,7 @@ body:hover .cursor-glow {
   margin-bottom: 16px;
 }
 .no-results h3 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 24px;
   margin-bottom: 8px;
 }
@@ -1591,18 +1558,13 @@ body:hover .cursor-glow {
 
 /* Subtle red top accent like real cards */
 .skeleton-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 70, 85, 0.15),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 70, 85, 0.15), transparent);
 }
 
 .skeleton-info {
@@ -1617,16 +1579,12 @@ body:hover .cursor-glow {
   width: 100%;
   height: 180px;
   border-radius: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 70, 85, 0.02),
-    rgba(100, 50, 255, 0.02)
-  );
+  background: linear-gradient(135deg, rgba(255, 70, 85, 0.02), rgba(100, 50, 255, 0.02));
   position: relative;
 }
 
 .bundle-skeleton .skeleton-image::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -1834,7 +1792,7 @@ body:hover .cursor-glow {
 }
 
 .glow-border::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1856,7 +1814,7 @@ body:hover .cursor-glow {
 }
 
 .glow-border::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 2px;
   border-radius: inherit;
@@ -2109,7 +2067,7 @@ body:hover .cursor-glow {
 }
 
 .modal-video-section h3 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -2296,7 +2254,7 @@ body:hover .cursor-glow {
 .video-time {
   color: var(--text-secondary);
   font-size: 12px;
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   font-weight: 600;
   white-space: nowrap;
   min-width: 75px;
@@ -2354,7 +2312,7 @@ body:hover .cursor-glow {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text-secondary);
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -2389,7 +2347,7 @@ body:hover .cursor-glow {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
   font-size: 11px;
   color: var(--primary);
@@ -2491,7 +2449,7 @@ body:hover .cursor-glow {
 }
 
 .error-state h3 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -2515,7 +2473,7 @@ body:hover .cursor-glow {
   color: white;
   border: none;
   border-radius: 8px;
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -2527,15 +2485,10 @@ body:hover .cursor-glow {
 }
 
 .error-retry-btn::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s;
 }
@@ -2767,7 +2720,7 @@ body:hover .cursor-glow {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text-secondary);
-  font-family: "Rajdhani", sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -2853,7 +2806,7 @@ body:hover .cursor-glow {
 }
 
 .favorites-empty h3 {
-  font-family: "Oswald", sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 24px;
   margin-bottom: 8px;
   color: var(--text-secondary);
@@ -2867,11 +2820,7 @@ body:hover .cursor-glow {
 
 /* Favorite card glow accent */
 .weapon-card.is-favorite::after {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(255, 70, 85, 0.1),
-    transparent 70%
-  );
+  background: radial-gradient(circle at 50% 0%, rgba(255, 70, 85, 0.1), transparent 70%);
   opacity: 1;
 }
 

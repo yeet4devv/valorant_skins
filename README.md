@@ -6,6 +6,7 @@ VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinami
 > Disclaimer: This is a fan-made project. VALORANT is a registered trademark of Riot Games. All skin images and data are property of Riot Games.
 
 ## Features
+
 - Silahları kategoriye göre filtreleme (Melee, Sidearm, SMG, Rifle, Sniper, Shotgun, Heavy)
 - Arama (weapon veya skin isimleri içinde)
 - Featured “Popular Collections” (bundles) bölümü
@@ -19,10 +20,12 @@ VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinami
 - Responsive tasarım + reduced motion desteği
 
 ## Tech Stack
+
 - HTML / CSS / JavaScript (Vanilla)
 - Data Source: https://valorant-api.com
 
 ## Project Structure
+
 ```txt
 valorant_skins/
 ├─ index.html
@@ -30,3 +33,4 @@ valorant_skins/
 │  └─ style.css
 └─ js/
    └─ app.js
+```
