@@ -1,48 +1,127 @@
-﻿[![CI](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml/badge.svg)](https://github.com/yeet4devv/valorant_skins/actions/workflows/ci.yml)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-ff4655)](https://yeet4devv.github.io/valorant_skins/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
+# 🎮 V ARSENAL – VALORANT Skin Explorer
 
-# V ARSENAL — VALORANT Skin Showcase
+**V ARSENAL** is a fan-made web application that showcases VALORANT weapon skins with detailed metadata including bundles, chromas, levels, and video previews.  
+The project focuses on **performance, clean architecture, and data-driven UI design without using any frontend framework**.
 
-Fan-made bir **VALORANT skin arşivi** web uygulaması.  
-VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinamik olarak listeler; skin detaylarında **Chromas**, **Levels** ve varsa **Video Preview** gösterir.
+> Built as a frontend engineering portfolio project with production-like practices.
 
-> Disclaimer: This is a fan-made project. VALORANT is a registered trademark of Riot Games. All skin images and data are property of Riot Games.
+---
 
-## Preview
+## 🚀 Live Demo
 
-![V ARSENAL Preview](assets/preview.png)
+🔗 https://yeet4devv.github.io/valorant_skins  
+*(Replace with your live URL if different)*
 
-## Live Demo
+---
 
-https://yeet4devv.github.io/valorant_skins/
+## 🧠 Product Vision
 
-## Features
+VALORANT skins are visually rich but scattered across multiple sources.  
+**V ARSENAL aims to provide a fast, centralized, and user-friendly skin discovery experience** for players and collectors.
 
-- Weapon kategorilerine göre filtreleme (Melee, Sidearm, SMG, Rifle, Sniper, Shotgun, Heavy)
-- Arama (weapon veya skin isimlerinde)
-- Featured “Popular Collections” (bundles)
-- Weapon modal: seçilen silahın skinlerini görüntüleme
-- Skin detail modal:
-  - Favorites (localStorage ile kalıcı)
-  - Chromas
-  - Levels
-  - Streamed video preview (varsa)
-- Skeleton loading, error state ve retry akışı
-- Responsive tasarım + prefers-reduced-motion desteği
+---
 
-## Tech Stack
+## ✨ Features
 
-- HTML / CSS / JavaScript (Vanilla)
-- Data Source: https://valorant-api.com
+- 🔫 Weapon and skin browsing
+- 📦 Bundle-based exploration
+- 🎨 Chroma and level previews
+- 🎥 Embedded skin video previews
+- ⚡ Lightweight and fast (Vanilla JS)
+- 📱 Responsive UI
+- 🌐 SEO & Open Graph metadata for sharing
 
-## Run Locally
+---
 
-`ash
-git clone https://github.com/yeet4devv/valorant_skins.git
-cd valorant_skins
-python -m http.server 5500
-Open: http://localhost:5500
+## 🏗️ Architecture Overview
 
-License
-MIT — see LICENSE
+This project intentionally avoids frameworks to demonstrate strong frontend fundamentals.
+
+**Key architectural decisions:**
+
+- Modular JavaScript structure (API, UI rendering, event handling)
+- SPA-like behavior with DOM-driven rendering
+- Separation of concerns between data fetching and UI logic
+- ESLint & Prettier for code consistency
+- Playwright for end-to-end testing infrastructure
+
+---
+
+## 🛠️ Tech Stack
+
+- HTML5
+- CSS3
+- Vanilla JavaScript (ES6+)
+- Fetch API & Async/Await
+- ESLint
+- Prettier
+- Playwright
+- GitHub Pages (Deployment)
+
+---
+
+## 📦 Data Source
+
+This project uses public VALORANT data APIs for weapons and skins metadata.
+
+> This is a **fan-made project** and is not affiliated with Riot Games.
+
+---
+
+## 🧪 Testing
+
+- Playwright configured for E2E testing
+- Planned: API error handling tests and UI snapshot tests
+
+---
+
+## 📌 Roadmap
+
+### v1.0
+- Core weapon and skin browsing  
+- Bundle and chroma previews  
+
+### v1.1
+- Performance optimizations
+- Improved loading and error states
+- Client-side caching
+
+### v2.0 (Future)
+- TypeScript migration
+- State management layer
+- Offline mode (Service Worker)
+- Advanced filtering and search
+- React / Next.js version
+
+---
+
+## 🧩 If This Were a Production Project
+
+- CI/CD pipeline (GitHub Actions)
+- Design system & component library
+- Error monitoring (Sentry)
+- Analytics for UX decisions
+- Performance budgets & Lighthouse CI
+- Feature flags and staged rollouts
+
+---
+
+## ⚠️ Disclaimer
+
+This project is **fan-made** and not endorsed by Riot Games.  
+All game assets and trademarks belong to their respective owners.
+
+---
+
+## 👤 Author
+
+**yeet4devv**  
+Frontend Developer  
+GitHub: https://github.com/yeet4devv  
+
+---
+
+## ⭐ Contributing
+
+Contributions, issues, and feature requests are welcome.  
+Feel free to fork the repository and submit a PR.
