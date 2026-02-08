@@ -10,12 +10,15 @@ VALORANT API üzerinden silahları, skinleri ve koleksiyonları (bundles) dinami
 > Disclaimer: This is a fan-made project. VALORANT is a registered trademark of Riot Games. All skin images and data are property of Riot Games.
 
 ## Preview
+
 ![V ARSENAL Preview](assets/preview.png)
 
 ## Live Demo
+
 https://yeet4devv.github.io/valorant_skins/
 
 ## Features
+
 - Weapon kategorilerine göre filtreleme (Melee, Sidearm, SMG, Rifle, Sniper, Shotgun, Heavy)
 - Arama (weapon veya skin isimlerinde)
 - Featured “Popular Collections” (bundles)
@@ -29,10 +32,12 @@ https://yeet4devv.github.io/valorant_skins/
 - Responsive tasarım + prefers-reduced-motion desteği
 
 ## Tech Stack
+
 - HTML / CSS / JavaScript (Vanilla)
 - Data Source: https://valorant-api.com
 
 ## Run Locally
+
 `ash
 git clone https://github.com/yeet4devv/valorant_skins.git
 cd valorant_skins
