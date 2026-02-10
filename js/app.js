@@ -8,12 +8,18 @@ const state = {
   allSkins: 0,
   currentFilter: 'all',
   searchQuery: '',
+  sortBy: 'name', // name | skins
   loadError: null,
   favorites: JSON.parse(localStorage.getItem('valorant_favorites') || '[]'),
 };
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
+
+const esc = (v) => {
+  if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(v);
+  return String(v).replace(/"/g, '\\"');
+};
 
 async function fetchData(endpoint) {
   const res = await fetch(`${API_BASE}${endpoint}`);
@@ -54,11 +60,9 @@ function isFavorite(skinUuid) {
 
 function toggleFavorite(skinUuid) {
   const idx = state.favorites.indexOf(skinUuid);
-  if (idx > -1) {
-    state.favorites.splice(idx, 1);
-  } else {
-    state.favorites.push(skinUuid);
-  }
+  if (idx > -1) state.favorites.splice(idx, 1);
+  else state.favorites.push(skinUuid);
+
   saveFavorites();
   return isFavorite(skinUuid);
 }
@@ -72,42 +76,43 @@ function updateFavoriteCounts() {
     if (!el) return;
     el.textContent = count;
     el.classList.toggle('visible', count > 0);
-    // Bump animation
+
     el.classList.remove('bump');
-    void el.offsetWidth; // force reflow
+    void el.offsetWidth;
     el.classList.add('bump');
   });
 }
 
 function createFavoriteButton(skinUuid) {
-  const isActive = isFavorite(skinUuid);
-  const iconClass = isActive ? 'fas fa-heart' : 'far fa-heart';
+  const active = isFavorite(skinUuid);
+  const iconClass = active ? 'fas fa-heart' : 'far fa-heart';
   return `
-        <button class="favorite-btn ${isActive ? 'active' : ''}" data-fav-skin="${skinUuid}" title="${isActive ? 'Remove from favorites' : 'Add to favorites'}">
-            <i class="${iconClass}"></i>
-            <div class="fav-burst"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-        </button>
-    `;
+    <button class="favorite-btn ${active ? 'active' : ''}" data-fav-skin="${skinUuid}" title="${
+      active ? 'Remove from favorites' : 'Add to favorites'
+    }">
+      <i class="${iconClass}"></i>
+      <div class="fav-burst">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </button>
+  `;
 }
 
 function initFavoriteHandlers() {
-  // Delegated click handler for all favorite buttons
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.favorite-btn');
     if (!btn) return;
 
-    e.stopPropagation(); // Don't trigger card click
+    e.stopPropagation();
     e.preventDefault();
 
     const skinUuid = btn.dataset.favSkin;
     const nowFav = toggleFavorite(skinUuid);
 
-    // Update this button
     btn.classList.toggle('active', nowFav);
     btn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
     btn.title = nowFav ? 'Remove from favorites' : 'Add to favorites';
 
-    // Burst effect
     if (nowFav) {
       btn.classList.remove('burst');
       void btn.offsetWidth;
@@ -115,16 +120,13 @@ function initFavoriteHandlers() {
       setTimeout(() => btn.classList.remove('burst'), 600);
     }
 
-    // Sync all other buttons with the same skin UUID
-    $$(`[data-fav-skin="${skinUuid}"]`).forEach((otherBtn) => {
-      if (otherBtn !== btn) {
-        otherBtn.classList.toggle('active', nowFav);
-        otherBtn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
-        otherBtn.title = nowFav ? 'Remove from favorites' : 'Add to favorites';
-      }
+    $$(`[data-fav-skin="${esc(skinUuid)}"]`).forEach((otherBtn) => {
+      if (otherBtn === btn) return;
+      otherBtn.classList.toggle('active', nowFav);
+      otherBtn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
+      otherBtn.title = nowFav ? 'Remove from favorites' : 'Add to favorites';
     });
 
-    // Sync modal favorite button
     const modalFavBtn = $('#modalFavoriteBtn');
     if (modalFavBtn && modalFavBtn.dataset.favSkin === skinUuid) {
       modalFavBtn.classList.toggle('active', nowFav);
@@ -134,20 +136,15 @@ function initFavoriteHandlers() {
         : 'Add to Favorites';
     }
 
-    // Show toast
     showToast(
       nowFav ? 'Added to favorites' : 'Removed from favorites',
       nowFav ? 'success' : 'error',
       1500
     );
 
-    // If viewing favorites filter and removed, re-render
-    if (!nowFav && state.currentFilter === 'favorites') {
-      renderWeapons();
-    }
+    if (!nowFav && state.currentFilter === 'favorites') renderWeapons();
   });
 
-  // Modal favorite button
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('#modalFavoriteBtn');
     if (!btn) return;
@@ -161,8 +158,7 @@ function initFavoriteHandlers() {
     btn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
     btn.querySelector('span').textContent = nowFav ? 'Remove from Favorites' : 'Add to Favorites';
 
-    // Sync card buttons
-    $$(`[data-fav-skin="${skinUuid}"]`).forEach((otherBtn) => {
+    $$(`[data-fav-skin="${esc(skinUuid)}"]`).forEach((otherBtn) => {
       otherBtn.classList.toggle('active', nowFav);
       otherBtn.querySelector('i').className = nowFav ? 'fas fa-heart' : 'far fa-heart';
     });
@@ -174,11 +170,9 @@ function initFavoriteHandlers() {
     );
   });
 
-  // Initialize counts
   updateFavoriteCounts();
 }
 
-// Find a skin by UUID across all weapons
 function findSkinByUuid(uuid) {
   for (const weapon of state.weapons) {
     if (!weapon.skins) continue;
@@ -192,10 +186,14 @@ function findSkinByUuid(uuid) {
 function showToast(msg, type = 'success', dur = 3000) {
   const existing = $('.toast');
   if (existing) existing.remove();
+
   const t = document.createElement('div');
   t.className = `toast ${type}`;
-  t.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><span>${msg}</span>`;
+  t.innerHTML = `<i class="fas ${
+    type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
+  }"></i><span>${msg}</span>`;
   document.body.appendChild(t);
+
   requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('visible')));
   setTimeout(() => {
     t.classList.remove('visible');
@@ -205,26 +203,41 @@ function showToast(msg, type = 'success', dur = 3000) {
 
 // ===== ERROR STATE =====
 function generateErrorHTML(target, errorMsg) {
-  return `<div class="error-state" data-error-target="${target}"><div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div><h3>Failed to Load ${target === 'weapons' ? 'Weapons' : 'Collections'}</h3><p>We couldn't connect to the VALORANT API. Check your connection and try again.</p><button class="error-retry-btn" data-retry="${target}"><i class="fas fa-redo"></i><span>Retry</span></button>${errorMsg ? `<div class="error-details">${errorMsg}</div>` : ''}</div>`;
+  return `
+    <div class="error-state" data-error-target="${target}">
+      <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <h3>Failed to Load ${target === 'weapons' ? 'Weapons' : 'Collections'}</h3>
+      <p>We couldn't connect to the VALORANT API. Check your connection and try again.</p>
+      <button class="error-retry-btn" data-retry="${target}">
+        <i class="fas fa-redo"></i><span>Retry</span>
+      </button>
+      ${errorMsg ? `<div class="error-details">${errorMsg}</div>` : ''}
+    </div>
+  `;
 }
 
 // ===== SKELETONS =====
 function generateWeaponSkeletons(n = 8) {
   let h = '';
-  for (let i = 0; i < n; i++)
+  for (let i = 0; i < n; i++) {
     h += `<div class="skeleton-card weapon-skeleton"><div class="skeleton skeleton-weapon-image"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text-short"></div><div class="skeleton skeleton-badge"></div></div></div>`;
+  }
   return h;
 }
+
 function generateSkinSkeletons(n = 8) {
   let h = '';
-  for (let i = 0; i < n; i++)
+  for (let i = 0; i < n; i++) {
     h += `<div class="skeleton-card skin-skeleton"><div class="skeleton skeleton-skin-image"></div><div class="skeleton-info"><div class="skeleton skeleton-skin-title"></div><div class="skeleton skeleton-skin-tier"></div></div></div>`;
+  }
   return h;
 }
 
 // ===== CURSOR GLOW =====
 function initCursorGlow() {
   const g = $('#cursorGlow');
+  if (!g) return;
+
   document.addEventListener('mousemove', (e) => {
     g.style.left = e.clientX + 'px';
     g.style.top = e.clientY + 'px';
@@ -234,6 +247,8 @@ function initCursorGlow() {
 // ===== PARTICLES =====
 function initParticles() {
   const c = $('#heroParticles');
+  if (!c) return;
+
   for (let i = 0; i < 40; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
@@ -251,39 +266,51 @@ function initTiltEffect() {
   let active = null,
     raf = null,
     mouse = { x: 0, y: 0 };
+
   const MAX = 12,
     GL = 0.15;
   const gc = (t) => t.closest('.weapon-card,.skin-card,.bundle-card');
-  const eg = (c) => {
+
+  const ensureGlare = (c) => {
     if (!c.querySelector('.tilt-glare')) {
       const g = document.createElement('div');
       g.className = 'tilt-glare';
       c.appendChild(g);
     }
   };
-  function ap(c, mx, my) {
+
+  function applyTilt(c, mx, my) {
     const r = c.getBoundingClientRect();
     const nx = Math.max(-1, Math.min(1, ((mx - r.left) / r.width) * 2 - 1));
     const ny = Math.max(-1, Math.min(1, ((my - r.top) / r.height) * 2 - 1));
+
     c.style.transform = `perspective(800px) rotateX(${-ny * MAX}deg) rotateY(${nx * MAX}deg) scale3d(1.03,1.03,1.03)`;
+
     const img = c.querySelector('.weapon-card-image,.skin-card-image,.bundle-image');
     if (img) img.style.transform = `translateX(${nx * 8}px) translateY(${ny * 8}px) scale(1.08)`;
+
     const gl = c.querySelector('.tilt-glare');
     if (gl) {
-      gl.style.background = `radial-gradient(circle at ${((mx - r.left) / r.width) * 100}% ${((my - r.top) / r.height) * 100}%, rgba(255,255,255,${GL}), transparent 60%)`;
+      gl.style.background = `radial-gradient(circle at ${((mx - r.left) / r.width) * 100}% ${
+        ((my - r.top) / r.height) * 100
+      }%, rgba(255,255,255,${GL}), transparent 60%)`;
       gl.style.opacity = '1';
     }
   }
-  function rs(c) {
+
+  function resetTilt(c) {
     c.style.transform = '';
     c.style.transition = 'transform 0.5s cubic-bezier(0.4,0,0.2,1)';
+
     const img = c.querySelector('.weapon-card-image,.skin-card-image,.bundle-image');
     if (img) {
       img.style.transform = '';
       img.style.transition = 'transform 0.5s cubic-bezier(0.4,0,0.2,1)';
     }
+
     const gl = c.querySelector('.tilt-glare');
     if (gl) gl.style.opacity = '0';
+
     setTimeout(() => {
       if (c !== active) {
         c.style.transition = '';
@@ -291,61 +318,75 @@ function initTiltEffect() {
       }
     }, 500);
   }
+
   function loop() {
-    if (active) ap(active, mouse.x, mouse.y);
+    if (active) applyTilt(active, mouse.x, mouse.y);
     raf = requestAnimationFrame(loop);
   }
+
   document.addEventListener('mousemove', (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+
     const c = gc(e.target);
     if (c && c !== active) {
-      if (active) rs(active);
+      if (active) resetTilt(active);
       active = c;
-      eg(c);
+      ensureGlare(c);
       c.style.transition = 'none';
       const img = c.querySelector('.weapon-card-image,.skin-card-image,.bundle-image');
       if (img) img.style.transition = 'none';
     } else if (!c && active) {
-      rs(active);
+      resetTilt(active);
       active = null;
     }
   });
+
   document.addEventListener('mouseleave', () => {
     if (active) {
-      rs(active);
+      resetTilt(active);
       active = null;
     }
   });
+
   raf = requestAnimationFrame(loop);
-  window.addEventListener('touchstart', () => cancelAnimationFrame(raf), {
-    once: true,
-  });
+  window.addEventListener(
+    'touchstart',
+    () => {
+      if (raf) cancelAnimationFrame(raf);
+    },
+    { once: true }
+  );
 }
 
 // ===== GLOW BORDER =====
 function initGlowBorder() {
   let active = null;
   const gc = (t) => t.closest('.weapon-card,.skin-card,.bundle-card');
-  function en(c) {
+
+  function ensure(c) {
     if (!c.querySelector('.glow-border')) {
       const b = document.createElement('div');
       b.className = 'glow-border';
       c.insertBefore(b, c.firstChild);
+
       const s = document.createElement('div');
       s.className = 'glow-border-shadow';
       c.insertBefore(s, c.firstChild);
     }
   }
+
   function on(c) {
-    en(c);
+    ensure(c);
     c.querySelector('.glow-border')?.classList.add('active');
     c.querySelector('.glow-border-shadow')?.classList.add('active');
   }
+
   function off(c) {
     c.querySelector('.glow-border')?.classList.remove('active');
     c.querySelector('.glow-border-shadow')?.classList.remove('active');
   }
+
   document.addEventListener('mousemove', (e) => {
     const c = gc(e.target);
     if (c && c !== active) {
@@ -357,12 +398,14 @@ function initGlowBorder() {
       active = null;
     }
   });
+
   document.addEventListener('mouseleave', () => {
     if (active) {
       off(active);
       active = null;
     }
   });
+
   window.addEventListener(
     'touchstart',
     () => {
@@ -390,14 +433,19 @@ function initVideoPlayer() {
     ctrlMute = $('#videoCtrlMute'),
     ctrlFs = $('#videoCtrlFullscreen'),
     loading = $('#videoLoading');
+
+  if (!video || !player) return;
+
   let isDrag = false,
     hideT = null;
+
   function fmt(s) {
     if (isNaN(s)) return '0:00';
     return `${Math.floor(s / 60)}:${Math.floor(s % 60)
       .toString()
       .padStart(2, '0')}`;
   }
+
   function upd() {
     if (!video.duration) return;
     const p = (video.currentTime / video.duration) * 100;
@@ -405,19 +453,23 @@ function initVideoPlayer() {
     handle.style.left = `calc(${p}% - 6px)`;
     timeEl.textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
   }
+
   function toggle() {
     video.paused ? video.play() : video.pause();
   }
+
   function upIcon() {
     ctrlPlay.innerHTML = `<i class="fas ${video.paused ? 'fa-play' : 'fa-pause'}"></i>`;
     player.classList.toggle('playing', !video.paused);
   }
+
   function seek(e) {
     const r = progress.getBoundingClientRect();
     const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
     video.currentTime = Math.max(0, Math.min(1, (cx - r.left) / r.width)) * video.duration;
     upd();
   }
+
   function showC() {
     controls.classList.add('force-show');
     clearTimeout(hideT);
@@ -425,11 +477,13 @@ function initVideoPlayer() {
       if (!video.paused) controls.classList.remove('force-show');
     }, 3000);
   }
-  playBtn.addEventListener('click', (e) => {
+
+  playBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     overlay.classList.add('hidden');
     video.play();
   });
+
   player.addEventListener('click', (e) => {
     if (e.target.closest('.video-controls,.video-overlay')) return;
     if (overlay.classList.contains('hidden')) {
@@ -437,38 +491,45 @@ function initVideoPlayer() {
       showC();
     }
   });
-  ctrlPlay.addEventListener('click', (e) => {
+
+  ctrlPlay?.addEventListener('click', (e) => {
     e.stopPropagation();
     toggle();
     showC();
   });
-  ctrlMute.addEventListener('click', (e) => {
+
+  ctrlMute?.addEventListener('click', (e) => {
     e.stopPropagation();
     video.muted = !video.muted;
     ctrlMute.innerHTML = `<i class="fas ${video.muted ? 'fa-volume-mute' : 'fa-volume-up'}"></i>`;
   });
-  ctrlFs.addEventListener('click', (e) => {
+
+  ctrlFs?.addEventListener('click', (e) => {
     e.stopPropagation();
     document.fullscreenElement
       ? document.exitFullscreen()
       : (player.requestFullscreen?.() ?? player.webkitRequestFullscreen?.());
   });
-  progress.addEventListener('mousedown', (e) => {
+
+  progress?.addEventListener('mousedown', (e) => {
     e.stopPropagation();
     isDrag = true;
     progress.classList.add('dragging');
     seek(e);
   });
+
   document.addEventListener('mousemove', (e) => {
     if (isDrag) seek(e);
   });
+
   document.addEventListener('mouseup', () => {
     if (isDrag) {
       isDrag = false;
       progress.classList.remove('dragging');
     }
   });
-  progress.addEventListener(
+
+  progress?.addEventListener(
     'touchstart',
     (e) => {
       isDrag = true;
@@ -477,6 +538,7 @@ function initVideoPlayer() {
     },
     { passive: true }
   );
+
   document.addEventListener(
     'touchmove',
     (e) => {
@@ -484,12 +546,14 @@ function initVideoPlayer() {
     },
     { passive: true }
   );
+
   document.addEventListener('touchend', () => {
     if (isDrag) {
       isDrag = false;
       progress.classList.remove('dragging');
     }
   });
+
   video.addEventListener('timeupdate', upd);
   video.addEventListener('play', upIcon);
   video.addEventListener('pause', upIcon);
@@ -497,22 +561,28 @@ function initVideoPlayer() {
     upIcon();
     controls.classList.add('force-show');
   });
-  video.addEventListener('waiting', () => loading.classList.add('visible'));
-  video.addEventListener('canplay', () => loading.classList.remove('visible'));
+
+  video.addEventListener('waiting', () => loading?.classList.add('visible'));
+  video.addEventListener('canplay', () => loading?.classList.remove('visible'));
   video.addEventListener('loadedmetadata', () => {
     upd();
-    loading.classList.remove('visible');
+    loading?.classList.remove('visible');
   });
+
   player.addEventListener('mousemove', showC);
+
   player.addEventListener('dblclick', (e) => {
     if (e.target.closest('.video-controls')) return;
     document.fullscreenElement
       ? document.exitFullscreen()
       : (player.requestFullscreen?.() ?? player.webkitRequestFullscreen?.());
   });
+
   player.setAttribute('tabindex', '0');
+
   player.addEventListener('keydown', (e) => {
     if (!overlay.classList.contains('hidden')) return;
+
     switch (e.key) {
       case ' ':
       case 'k':
@@ -537,9 +607,12 @@ function initVideoPlayer() {
       case 'f':
         document.fullscreenElement ? document.exitFullscreen() : player.requestFullscreen?.();
         break;
+      default:
+        break;
     }
   });
 }
+
 function loadVideo(url) {
   const v = $('#videoElement'),
     s = $('#videoSource'),
@@ -550,16 +623,228 @@ function loadVideo(url) {
     h = $('#videoProgressHandle'),
     t = $('#videoTime'),
     p = $('#videoPlayer');
+
+  if (!v || !s) return;
+
   v.pause();
-  o.classList.remove('hidden');
-  l.classList.remove('visible');
-  c.classList.remove('force-show');
-  p.classList.remove('playing');
-  f.style.width = '0%';
-  h.style.left = '-6px';
-  t.textContent = '0:00 / 0:00';
+  o?.classList.remove('hidden');
+  l?.classList.remove('visible');
+  c?.classList.remove('force-show');
+  p?.classList.remove('playing');
+
+  if (f) f.style.width = '0%';
+  if (h) h.style.left = '-6px';
+  if (t) t.textContent = '0:00 / 0:00';
+
   s.src = url;
   v.load();
+}
+
+// ===== URL STATE (DEEP LINK) + UI SYNC =====
+function updateURLFromState() {
+  const url = new URL(window.location.href);
+
+  if (state.currentFilter && state.currentFilter !== 'all')
+    url.searchParams.set('filter', state.currentFilter);
+  else url.searchParams.delete('filter');
+
+  if (state.searchQuery) url.searchParams.set('q', state.searchQuery);
+  else url.searchParams.delete('q');
+
+  if (state.sortBy && state.sortBy !== 'name') url.searchParams.set('sort', state.sortBy);
+  else url.searchParams.delete('sort');
+
+  history.replaceState(null, '', url.toString());
+}
+
+function setActiveFilterLinks(filter) {
+  $$('.nav-link').forEach((x) => x.classList.toggle('active', x.dataset.filter === filter));
+  $$('.mobile-link').forEach((x) => x.classList.toggle('active', x.dataset.filter === filter));
+}
+
+function setSearchInputsValue(value) {
+  const dI = $('#searchInput');
+  const mI = $('#mobileSearchInput');
+
+  if (dI) {
+    dI.value = value;
+    dI.classList.toggle('has-value', value.length > 0);
+  }
+
+  if (mI) {
+    mI.value = value;
+    mI.classList.toggle('has-value', value.length > 0);
+  }
+}
+
+function setFilter(filter) {
+  state.currentFilter = filter || 'all';
+  setActiveFilterLinks(state.currentFilter);
+  updateURLFromState();
+  renderWeapons();
+}
+
+function setSearch(query) {
+  state.searchQuery = (query || '').toLowerCase().trim();
+  updateURLFromState();
+  renderWeapons();
+}
+
+function setSort(sortBy) {
+  state.sortBy = sortBy || 'name';
+  const sortSelect = $('#sortSelect');
+  if (sortSelect) sortSelect.value = state.sortBy;
+  updateURLFromState();
+  renderWeapons();
+}
+
+function applyStateFromURL() {
+  const url = new URL(window.location.href);
+  const filter = url.searchParams.get('filter') || 'all';
+  const q = url.searchParams.get('q') || '';
+  const sort = url.searchParams.get('sort') || 'name';
+
+  state.currentFilter = filter;
+  state.searchQuery = q.toLowerCase().trim();
+  state.sortBy = sort;
+
+  setActiveFilterLinks(state.currentFilter);
+  setSearchInputsValue(q);
+
+  const sortSelect = $('#sortSelect');
+  if (sortSelect) sortSelect.value = state.sortBy;
+}
+
+window.addEventListener('popstate', () => {
+  applyStateFromURL();
+  renderWeapons();
+});
+
+// ===== APPLIED FILTERS (CHIPS) + RESULTS COUNT =====
+function setToolbarVisible(visible) {
+  const t = $('#skinsToolbar');
+  if (!t) return;
+  t.style.display = visible ? '' : 'none';
+}
+
+function labelForFilter(filter) {
+  const m = {
+    all: 'All',
+    favorites: 'Favorites',
+    melee: 'Melee',
+    sidearm: 'Sidearm',
+    smg: 'SMG',
+    rifle: 'Rifle',
+    sniper: 'Sniper',
+    shotgun: 'Shotgun',
+    heavy: 'Heavy',
+  };
+  return m[filter] || filter;
+}
+
+function labelForSort(sortBy) {
+  if (sortBy === 'skins') return 'Sort: Skin Count';
+  return 'Sort: Name';
+}
+
+function renderToolbar({ mode, count }) {
+  const resultsEl = $('#resultsCount');
+  const filtersEl = $('#appliedFilters');
+  if (!resultsEl || !filtersEl) return;
+
+  setToolbarVisible(true);
+
+  if (mode === 'favorites') resultsEl.textContent = `Showing ${count} favorites`;
+  else resultsEl.textContent = `Showing ${count} weapons`;
+
+  const chips = [];
+
+  if (state.currentFilter !== 'all') {
+    chips.push({
+      label: labelForFilter(state.currentFilter),
+      action: 'remove-filter',
+    });
+  }
+
+  if (state.searchQuery) {
+    chips.push({
+      label: `Search: ${state.searchQuery}`,
+      action: 'remove-search',
+    });
+  }
+
+  if (state.sortBy !== 'name') {
+    chips.push({
+      label: labelForSort(state.sortBy),
+      action: 'remove-sort',
+    });
+  }
+
+  const chipsHTML = chips
+    .map(
+      (c) => `
+      <button class="filter-chip" type="button" data-ui-action="${c.action}">
+        <span>${c.label}</span>
+        <i class="fas fa-times"></i>
+      </button>
+    `
+    )
+    .join('');
+
+  const resetHTML =
+    chips.length > 0
+      ? `
+      <button class="chip-reset" type="button" data-ui-action="reset-all">
+        <i class="fas fa-rotate-left"></i>
+        <span>Reset</span>
+      </button>
+    `
+      : '';
+
+  filtersEl.innerHTML = chipsHTML + resetHTML;
+}
+
+function initUIActions() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ui-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.uiAction;
+
+    if (action === 'remove-filter') {
+      setFilter('all');
+      return;
+    }
+
+    if (action === 'remove-search') {
+      setSearchInputsValue('');
+      setSearch('');
+      return;
+    }
+
+    if (action === 'remove-sort') {
+      setSort('name');
+      return;
+    }
+
+    if (action === 'clear-search') {
+      setSearchInputsValue('');
+      setSearch('');
+      return;
+    }
+
+    if (action === 'reset-all') {
+      state.currentFilter = 'all';
+      state.searchQuery = '';
+      state.sortBy = 'name';
+      setActiveFilterLinks('all');
+      setSearchInputsValue('');
+      const sortSelect = $('#sortSelect');
+      if (sortSelect) sortSelect.value = 'name';
+      updateURLFromState();
+      renderWeapons();
+    }
+  });
 }
 
 // ===== NAVBAR =====
@@ -567,72 +852,77 @@ function initNavbar() {
   const navbar = $('#navbar'),
     mBtn = $('#mobileMenuBtn'),
     mMenu = $('#mobileMenu');
+
   window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
-    $('#backToTop').classList.toggle('visible', window.scrollY > 500);
+    navbar?.classList.toggle('scrolled', window.scrollY > 50);
+    $('#backToTop')?.classList.toggle('visible', window.scrollY > 500);
   });
-  mBtn.addEventListener('click', () => {
+
+  mBtn?.addEventListener('click', () => {
     mBtn.classList.toggle('active');
-    mMenu.classList.toggle('active');
+    mMenu?.classList.toggle('active');
   });
 
   $$('.nav-link').forEach((l) => {
     l.addEventListener('click', (e) => {
       e.preventDefault();
-      $$('.nav-link').forEach((x) => x.classList.remove('active'));
-      l.classList.add('active');
-      state.currentFilter = l.dataset.filter;
-      renderWeapons();
-    });
-  });
-  $$('.mobile-link').forEach((l) => {
-    l.addEventListener('click', (e) => {
-      e.preventDefault();
-      $$('.mobile-link').forEach((x) => x.classList.remove('active'));
-      l.classList.add('active');
-      $$('.nav-link').forEach((x) =>
-        x.classList.toggle('active', x.dataset.filter === l.dataset.filter)
-      );
-      state.currentFilter = l.dataset.filter;
-      mBtn.classList.remove('active');
-      mMenu.classList.remove('active');
-      renderWeapons();
+      setFilter(l.dataset.filter);
     });
   });
 
-  const exec = debounce((v) => {
-    state.searchQuery = v.toLowerCase().trim();
-    renderWeapons();
-  }, 250);
+  $$('.mobile-link').forEach((l) => {
+    l.addEventListener('click', (e) => {
+      e.preventDefault();
+      setFilter(l.dataset.filter);
+      mBtn?.classList.remove('active');
+      mMenu?.classList.remove('active');
+    });
+  });
+
+  const exec = debounce((v) => setSearch(v), 250);
   const dI = $('#searchInput'),
     mI = $('#mobileSearchInput');
-  dI.addEventListener('input', (e) => {
+
+  dI?.addEventListener('input', (e) => {
     const v = e.target.value;
-    mI.value = v;
+    if (mI) mI.value = v;
     dI.classList.toggle('has-value', v.length > 0);
     exec(v);
   });
-  mI.addEventListener('input', (e) => {
+
+  mI?.addEventListener('input', (e) => {
     const v = e.target.value;
-    dI.value = v;
+    if (dI) dI.value = v;
     mI.classList.toggle('has-value', v.length > 0);
     exec(v);
   });
-  const cs = (i, o) => {
+
+  const clearOnEsc = (i, other) => {
     i.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && i.value.length > 0) {
         e.stopPropagation();
         i.value = '';
-        o.value = '';
+        if (other) other.value = '';
         i.classList.remove('has-value');
-        state.searchQuery = '';
-        renderWeapons();
+        setSearch('');
       }
     });
   };
-  cs(dI, mI);
-  cs(mI, dI);
-  $('#backToTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  if (dI && mI) {
+    clearOnEsc(dI, mI);
+    clearOnEsc(mI, dI);
+  }
+
+  $('#backToTop')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+function initSort() {
+  const sortSelect = $('#sortSelect');
+  if (!sortSelect) return;
+
+  sortSelect.value = state.sortBy || 'name';
+  sortSelect.addEventListener('change', () => setSort(sortSelect.value));
 }
 
 function getWeaponCategory(c) {
@@ -648,18 +938,20 @@ function getWeaponCategory(c) {
   return 'other';
 }
 
-// Fix stagger
 function createStaggerObserver(containerSelector) {
   let rq = [],
     rt = null;
-  const fq = () => {
+
+  const flush = () => {
     rq.forEach((card, i) => {
       const con = document.querySelector(containerSelector);
       let cols = 1;
+
       if (con) {
         const t = getComputedStyle(con).getPropertyValue('grid-template-columns');
         if (t && t !== 'none') cols = t.split(' ').length;
       }
+
       const d = Math.floor(i / cols) * 120 + (i % cols) * 60;
       card.style.transitionDelay = `${d}ms`;
       card.classList.add('visible');
@@ -667,16 +959,17 @@ function createStaggerObserver(containerSelector) {
     });
     rq = [];
   };
+
   return new IntersectionObserver(
-    (entries) => {
+    (entries, obs) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
           rq.push(e.target);
-          e.target.closest && 0; /*unobserve handled below*/
+          obs.unobserve(e.target);
         }
       });
       clearTimeout(rt);
-      rt = setTimeout(fq, 50);
+      rt = setTimeout(flush, 50);
     },
     { threshold: 0.05, rootMargin: '0px 0px -40px 0px' }
   );
@@ -687,44 +980,51 @@ function initRetryHandlers() {
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('.error-retry-btn');
     if (!btn) return;
+
     const target = btn.dataset.retry;
+
     btn.classList.add('loading');
     btn.querySelector('i').className = 'fas fa-spinner';
     btn.querySelector('span').textContent = 'Retrying...';
+
     try {
       if (target === 'weapons' || target === 'all') {
-        const w = await fetchData('/weapons');
-        state.weapons = w || [];
+        const w = (await fetchData('/weapons')) || [];
+        state.weapons = w;
+
         let sc = 0;
-        state.weapons.forEach((w) => {
-          if (w.skins)
-            sc += w.skins.filter(
-              (s) =>
-                s.displayIcon &&
-                !s.displayName.toLowerCase().includes('standard') &&
-                !s.displayName.toLowerCase().includes('random')
-            ).length;
+        state.weapons.forEach((weapon) => {
+          if (!weapon.skins) return;
+          sc += weapon.skins.filter(
+            (s) =>
+              s.displayIcon &&
+              !s.displayName.toLowerCase().includes('standard') &&
+              !s.displayName.toLowerCase().includes('random')
+          ).length;
         });
+
         state.allSkins = sc;
         animateNumber($('#totalSkins'), sc);
         animateNumber($('#totalWeapons'), state.weapons.length);
         setHeroFeatured();
         renderWeapons();
       }
+
       if (target === 'bundles' || target === 'all') {
-        const b = await fetchData('/bundles');
-        state.bundles = (b || []).filter((b) => b.displayIcon);
+        const b = (await fetchData('/bundles')) || [];
+        state.bundles = b.filter((x) => x.displayIcon);
         animateNumber($('#totalBundles'), state.bundles.length);
         renderBundles();
       }
+
       state.loadError = null;
-      showToast('Data loaded successfully!', 'success');
+      showToast('Data loaded successfully!', 'success', 1500);
     } catch (err) {
       console.error('Retry failed:', err);
       btn.classList.remove('loading');
       btn.querySelector('i').className = 'fas fa-redo';
       btn.querySelector('span').textContent = 'Retry';
-      showToast('Retry failed — please try again', 'error');
+      showToast('Retry failed — please try again', 'error', 2000);
     }
   });
 }
@@ -733,6 +1033,7 @@ function initRetryHandlers() {
 async function loadData() {
   let wErr = null,
     bErr = null;
+
   try {
     state.weapons = (await fetchData('/weapons')) || [];
   } catch (e) {
@@ -740,6 +1041,7 @@ async function loadData() {
     wErr = e.message;
     state.weapons = [];
   }
+
   try {
     state.bundles = ((await fetchData('/bundles')) || []).filter((b) => b.displayIcon);
   } catch (e) {
@@ -747,99 +1049,170 @@ async function loadData() {
     bErr = e.message;
     state.bundles = [];
   }
+
   let sc = 0;
   state.weapons.forEach((w) => {
-    if (w.skins)
-      sc += w.skins.filter(
-        (s) =>
-          s.displayIcon &&
-          !s.displayName.toLowerCase().includes('standard') &&
-          !s.displayName.toLowerCase().includes('random')
-      ).length;
+    if (!w.skins) return;
+    sc += w.skins.filter(
+      (s) =>
+        s.displayIcon &&
+        !s.displayName.toLowerCase().includes('standard') &&
+        !s.displayName.toLowerCase().includes('random')
+    ).length;
   });
+
   state.allSkins = sc;
-  setTimeout(() => $('#loader').classList.add('hidden'), 2000);
+
+  setTimeout(() => $('#loader')?.classList.add('hidden'), 2000);
   setTimeout(() => {
     animateNumber($('#totalSkins'), sc);
     animateNumber($('#totalWeapons'), state.weapons.length);
     animateNumber($('#totalBundles'), state.bundles.length);
   }, 2200);
+
   if (wErr && bErr) {
     state.loadError = 'all';
     $('#bundlesCarousel').innerHTML = generateErrorHTML('bundles', bErr);
     $('#weaponsGrid').innerHTML = generateErrorHTML('weapons', wErr);
   } else {
-    bErr ? ($('#bundlesCarousel').innerHTML = generateErrorHTML('bundles', bErr)) : renderBundles();
-    if (wErr) {
-      $('#weaponsGrid').innerHTML = generateErrorHTML('weapons', wErr);
-    } else {
+    if (bErr) $('#bundlesCarousel').innerHTML = generateErrorHTML('bundles', bErr);
+    else renderBundles();
+
+    if (wErr) $('#weaponsGrid').innerHTML = generateErrorHTML('weapons', wErr);
+    else {
       setHeroFeatured();
       renderWeapons();
     }
   }
+
   updateFavoriteCounts();
 }
 
 function setHeroFeatured() {
   const c = $('#heroFeatured');
-  const w = state.weapons.find((w) => w.displayName === 'Vandal') || state.weapons[5];
-  if (w?.skins) {
-    const s = w.skins.find(
-      (s) => s.displayIcon && !s.displayName.toLowerCase().includes('standard')
-    );
-    if (s?.displayIcon) c.innerHTML = `<img src="${s.displayIcon}" alt="${s.displayName}">`;
-  }
+  if (!c) return;
+
+  const w = state.weapons.find((x) => x.displayName === 'Vandal') || state.weapons[5];
+  if (!w?.skins) return;
+
+  const s = w.skins.find((x) => x.displayIcon && !x.displayName.toLowerCase().includes('standard'));
+  if (s?.displayIcon) c.innerHTML = `<img src="${s.displayIcon}" alt="${s.displayName}">`;
 }
 
 function renderBundles() {
   const c = $('#bundlesCarousel');
   const f = state.bundles.slice(0, 8);
+
   if (!f.length) {
     c.innerHTML = generateErrorHTML('bundles', 'No bundle data');
     return;
   }
+
   c.innerHTML = f
     .map(
-      (b, i) =>
-        `<div class="bundle-card" style="animation:fadeInUp 0.5s ease ${i * 0.1}s forwards;opacity:0;"><img src="${b.displayIcon}" alt="${b.displayName}" class="bundle-image" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 180%22><rect fill=%22%2316161f%22 width=%22300%22 height=%22180%22/><text x=%22150%22 y=%2295%22 fill=%22%234a4a5e%22 text-anchor=%22middle%22 font-size=%2214%22>No Image</text></svg>'"><div class="bundle-info"><h3 class="bundle-name">${b.displayName}</h3><div class="bundle-meta"><i class="fas fa-layer-group"></i><span>Collection Bundle</span></div></div></div>`
+      (b, i) => `
+      <div class="bundle-card" data-bundle-name="${b.displayName}" style="animation:fadeInUp 0.5s ease ${
+        i * 0.1
+      }s forwards;opacity:0;">
+        <img src="${b.displayIcon}" alt="${b.displayName}" class="bundle-image" loading="lazy"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 180%22><rect fill=%22%2316161f%22 width=%22300%22 height=%22180%22/><text x=%22150%22 y=%2295%22 fill=%22%234a4a5e%22 text-anchor=%22middle%22 font-size=%2214%22>No Image</text></svg>'">
+        <div class="bundle-info">
+          <h3 class="bundle-name">${b.displayName}</h3>
+          <div class="bundle-meta"><i class="fas fa-layer-group"></i><span>Collection Bundle</span></div>
+        </div>
+      </div>
+    `
     )
     .join('');
+
+  $$('.bundle-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const name = card.dataset.bundleName || '';
+      const cleaned = name
+        .replace(/collection/gi, '')
+        .replace(/bundle/gi, '')
+        .trim();
+
+      setFilter('all');
+      setSearchInputsValue(cleaned);
+      setSearch(cleaned);
+
+      document.querySelector('#skins')?.scrollIntoView({ behavior: 'smooth' });
+      showToast(`Filtered by collection: ${name}`, 'success', 1800);
+    });
+  });
 }
 
 function renderWeapons() {
   const container = $('#weaponsGrid');
 
-  // Favorites filter — show individual skins, not weapons
   if (state.currentFilter === 'favorites') {
     renderFavorites(container);
     return;
   }
 
   let weapons = [...state.weapons];
+
   if (!weapons.length && !state.loadError) {
+    setToolbarVisible(false);
     container.innerHTML = generateWeaponSkeletons(8);
     return;
   }
+
   if (!weapons.length && state.loadError) {
+    setToolbarVisible(false);
     if (!container.querySelector('.error-state'))
       container.innerHTML = generateErrorHTML('weapons', 'No weapon data');
     return;
   }
 
-  if (state.currentFilter !== 'all')
+  if (state.currentFilter !== 'all') {
     weapons = weapons.filter((w) => {
       const cat =
         w.shopData?.categoryText || w.category?.replace('EEquippableCategory::', '') || '';
       return getWeaponCategory(cat) === state.currentFilter;
     });
-  if (state.searchQuery)
+  }
+
+  if (state.searchQuery) {
     weapons = weapons.filter(
       (w) =>
         w.displayName.toLowerCase().includes(state.searchQuery) ||
         w.skins?.some((s) => s.displayName.toLowerCase().includes(state.searchQuery))
     );
+  }
+
+  if (state.sortBy === 'name') {
+    weapons.sort((a, b) => a.displayName.localeCompare(b.displayName));
+  } else if (state.sortBy === 'skins') {
+    const skinCount = (w) =>
+      (w.skins || []).filter(
+        (s) =>
+          s.displayIcon &&
+          !s.displayName.toLowerCase().includes('standard') &&
+          !s.displayName.toLowerCase().includes('random')
+      ).length;
+    weapons.sort((a, b) => skinCount(b) - skinCount(a));
+  }
+
   if (!weapons.length) {
-    container.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><h3>No weapons found</h3><p>Try a different search or filter</p></div>`;
+    container.innerHTML = `
+      <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>No weapons found</h3>
+        <p>Try a different search or filter</p>
+        <div class="no-results-actions">
+          <button class="error-retry-btn" type="button" data-ui-action="clear-search">
+            <i class="fas fa-eraser"></i><span>Clear search</span>
+          </button>
+          <button class="error-retry-btn" type="button" data-ui-action="reset-all">
+            <i class="fas fa-rotate-left"></i><span>Reset all</span>
+          </button>
+        </div>
+      </div>
+    `;
+    renderToolbar({ mode: 'weapons', count: 0 });
+    updateURLFromState();
     return;
   }
 
@@ -853,10 +1226,21 @@ function renderWeapons() {
               !s.displayName.toLowerCase().includes('random')
           ).length
         : 0;
+
       const cat =
         w.shopData?.categoryText || w.category?.replace('EEquippableCategory::', '') || 'Weapon';
       const img = w.displayIcon || w.killStreamIcon || '';
-      return `<div class="weapon-card" data-weapon-id="${w.uuid}"><img src="${img}" alt="${w.displayName}" class="weapon-card-image" loading="lazy" onerror="this.style.display='none'"><div class="weapon-card-info"><h3 class="weapon-card-name">${w.displayName}</h3><p class="weapon-card-category">${cat}</p><div class="weapon-card-count"><i class="fas fa-paint-brush"></i>${sc} skins</div></div></div>`;
+
+      return `
+        <div class="weapon-card" data-weapon-id="${w.uuid}">
+          <img src="${img}" alt="${w.displayName}" class="weapon-card-image" loading="lazy" onerror="this.style.display='none'">
+          <div class="weapon-card-info">
+            <h3 class="weapon-card-name">${w.displayName}</h3>
+            <p class="weapon-card-category">${cat}</p>
+            <div class="weapon-card-count"><i class="fas fa-paint-brush"></i>${sc} skins</div>
+          </div>
+        </div>
+      `;
     })
     .join('');
 
@@ -864,26 +1248,32 @@ function renderWeapons() {
   $$('.weapon-card').forEach((card) => {
     obs.observe(card);
     card.addEventListener('click', () => {
-      const w = state.weapons.find((w) => w.uuid === card.dataset.weaponId);
+      const w = state.weapons.find((x) => x.uuid === card.dataset.weaponId);
       if (w) openWeaponModal(w);
     });
   });
+
+  renderToolbar({ mode: 'weapons', count: weapons.length });
+  updateURLFromState();
 }
 
 // ===== RENDER FAVORITES =====
 function renderFavorites(container) {
+  // show toolbar even if empty
+  renderToolbar({ mode: 'favorites', count: 0 });
+
   if (state.favorites.length === 0) {
     container.innerHTML = `
-            <div class="favorites-empty">
-                <i class="far fa-heart"></i>
-                <h3>No Favorites Yet</h3>
-                <p>Click the heart icon on any skin to add it to your favorites collection. Your picks are saved locally.</p>
-            </div>
-        `;
+      <div class="favorites-empty">
+        <i class="far fa-heart"></i>
+        <h3>No Favorites Yet</h3>
+        <p>Click the heart icon on any skin to add it to your favorites collection. Your picks are saved locally.</p>
+      </div>
+    `;
+    updateURLFromState();
     return;
   }
 
-  // Gather favorite skins
   const favSkins = [];
   for (const uuid of state.favorites) {
     const result = findSkinByUuid(uuid);
@@ -892,16 +1282,17 @@ function renderFavorites(container) {
 
   if (favSkins.length === 0) {
     container.innerHTML = `
-            <div class="favorites-empty">
-                <i class="far fa-heart"></i>
-                <h3>No Favorites Yet</h3>
-                <p>Your favorited skins will appear here once weapon data loads.</p>
-            </div>
-        `;
+      <div class="favorites-empty">
+        <i class="far fa-heart"></i>
+        <h3>No Favorites Yet</h3>
+        <p>Your favorited skins will appear here once weapon data loads.</p>
+      </div>
+    `;
+    renderToolbar({ mode: 'favorites', count: 0 });
+    updateURLFromState();
     return;
   }
 
-  // Filter by search
   let filtered = favSkins;
   if (state.searchQuery) {
     filtered = favSkins.filter(
@@ -912,41 +1303,78 @@ function renderFavorites(container) {
   }
 
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><h3>No matching favorites</h3><p>Try a different search term</p></div>`;
+    container.innerHTML = `
+      <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>No matching favorites</h3>
+        <p>Try a different search term</p>
+        <div class="no-results-actions">
+          <button class="error-retry-btn" type="button" data-ui-action="clear-search">
+            <i class="fas fa-eraser"></i><span>Clear search</span>
+          </button>
+          <button class="error-retry-btn" type="button" data-ui-action="reset-all">
+            <i class="fas fa-rotate-left"></i><span>Reset all</span>
+          </button>
+        </div>
+      </div>
+    `;
+    renderToolbar({ mode: 'favorites', count: 0 });
+    updateURLFromState();
     return;
   }
 
-  container.innerHTML = filtered
-    .map(({ skin, weaponName }) => {
-      const tier = skin.contentTierUuid ? getTierInfo(skin.contentTierUuid) : null;
-      const img = skin.displayIcon || '';
-      return `
-            <div class="weapon-card is-favorite" data-fav-click-skin="${skin.uuid}" data-fav-click-weapon="${weaponName}">
-                ${createFavoriteButton(skin.uuid)}
-                <img src="${img}" alt="${skin.displayName}" class="weapon-card-image" loading="lazy" onerror="this.style.display='none'">
-                <div class="weapon-card-info">
-                    <h3 class="weapon-card-name">${skin.displayName}</h3>
-                    <p class="weapon-card-category">${weaponName}</p>
-                    ${tier ? `<div class="weapon-card-count"><img src="${tier.icon}" class="tier-icon" alt="" style="width:14px;height:14px;margin-right:2px">${tier.name}</div>` : ''}
-                </div>
-            </div>
-        `;
-    })
-    .join('');
+  const toolsHTML = `
+    <div class="favorites-tools" style="grid-column: 1 / -1; display:flex; gap:10px; justify-content:center; margin-bottom: 10px; flex-wrap:wrap;">
+      <button class="error-retry-btn" id="favExportBtn" type="button">
+        <i class="fas fa-file-export"></i><span>Export Favorites</span>
+      </button>
+      <button class="error-retry-btn" id="favImportBtn" type="button">
+        <i class="fas fa-file-import"></i><span>Import Favorites</span>
+      </button>
+      <button class="error-retry-btn" id="favClearBtn" type="button">
+        <i class="fas fa-trash"></i><span>Clear</span>
+      </button>
+    </div>
+  `;
 
-  // Stagger animation
+  container.innerHTML =
+    toolsHTML +
+    filtered
+      .map(({ skin, weaponName }) => {
+        const tier = skin.contentTierUuid ? getTierInfo(skin.contentTierUuid) : null;
+        const img = skin.displayIcon || '';
+        return `
+          <div class="weapon-card is-favorite" data-fav-click-skin="${skin.uuid}">
+            ${createFavoriteButton(skin.uuid)}
+            <img src="${img}" alt="${skin.displayName}" class="weapon-card-image" loading="lazy" onerror="this.style.display='none'">
+            <div class="weapon-card-info">
+              <h3 class="weapon-card-name">${skin.displayName}</h3>
+              <p class="weapon-card-category">${weaponName}</p>
+              ${
+                tier
+                  ? `<div class="weapon-card-count"><img src="${tier.icon}" class="tier-icon" alt="" style="width:14px;height:14px;margin-right:2px">${tier.name}</div>`
+                  : ''
+              }
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
   const obs = createStaggerObserver('#weaponsGrid');
   $$('.weapon-card').forEach((card) => {
     obs.observe(card);
     card.addEventListener('click', (e) => {
       if (e.target.closest('.favorite-btn')) return;
       const skinUuid = card.dataset.favClickSkin;
-      if (skinUuid) {
-        const result = findSkinByUuid(skinUuid);
-        if (result) openSkinModal(result.skin, result.weaponName);
-      }
+      if (!skinUuid) return;
+      const result = findSkinByUuid(skinUuid);
+      if (result) openSkinModal(result.skin, result.weaponName);
     });
   });
+
+  renderToolbar({ mode: 'favorites', count: filtered.length });
+  updateURLFromState();
 }
 
 // ===== WEAPON MODAL =====
@@ -954,33 +1382,52 @@ function openWeaponModal(weapon) {
   const overlay = $('#weaponModalOverlay');
   $('#weaponModalImage').src = weapon.displayIcon || weapon.killStreamIcon || '';
   $('#weaponModalTitle').textContent = weapon.displayName;
+
   const grid = $('#weaponSkinsGrid');
   const skins = (weapon.skins || []).filter(
     (s) => s.displayIcon && !s.displayName.toLowerCase().includes('random')
   );
+
   grid.innerHTML = generateSkinSkeletons(skins.length || 6);
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
+
   setTimeout(() => {
     grid.innerHTML = skins
       .map((skin) => {
         const tier = skin.contentTierUuid ? getTierInfo(skin.contentTierUuid) : null;
-        return `<div class="skin-card" data-skin-id="${skin.uuid}">${createFavoriteButton(skin.uuid)}<img src="${skin.displayIcon}" alt="${skin.displayName}" class="skin-card-image" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 80%22><rect fill=%22%2316161f%22 width=%22200%22 height=%2280%22/><text x=%22100%22 y=%2245%22 fill=%22%234a4a5e%22 text-anchor=%22middle%22 font-size=%2212%22>No Preview</text></svg>'"><p class="skin-card-name">${skin.displayName}</p>${tier ? `<div class="skin-card-tier"><img src="${tier.icon}" class="tier-icon" alt=""><span>${tier.name}</span></div>` : ''}</div>`;
+        return `
+          <div class="skin-card" data-skin-id="${skin.uuid}">
+            ${createFavoriteButton(skin.uuid)}
+            <img src="${skin.displayIcon}" alt="${skin.displayName}" class="skin-card-image" loading="lazy"
+              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 80%22><rect fill=%22%2316161f%22 width=%22200%22 height=%2280%22/><text x=%22100%22 y=%2245%22 fill=%22%234a4a5e%22 text-anchor=%22middle%22 font-size=%2212%22>No Preview</text></svg>'">
+            <p class="skin-card-name">${skin.displayName}</p>
+            ${
+              tier
+                ? `<div class="skin-card-tier"><img src="${tier.icon}" class="tier-icon" alt=""><span>${tier.name}</span></div>`
+                : ''
+            }
+          </div>
+        `;
       })
       .join('');
+
     grid.querySelectorAll('.skin-card').forEach((card, i) => {
       card.classList.add('skin-card-hidden');
+
       const t = getComputedStyle(grid).getPropertyValue('grid-template-columns');
       let cols = 1;
       if (t && t !== 'none') cols = t.split(' ').length;
+
       const d = Math.floor(i / cols) * 100 + (i % cols) * 50;
       setTimeout(() => {
         card.classList.remove('skin-card-hidden');
         card.classList.add('skin-card-visible');
       }, 50 + d);
+
       card.addEventListener('click', (e) => {
         if (e.target.closest('.favorite-btn')) return;
-        const s = skins.find((s) => s.uuid === card.dataset.skinId);
+        const s = skins.find((x) => x.uuid === card.dataset.skinId);
         if (s) {
           closeWeaponModal();
           setTimeout(() => openSkinModal(s, weapon.displayName), 300);
@@ -1018,12 +1465,14 @@ function getTierInfo(uuid) {
       icon: 'https://media.valorant-api.com/contenttiers/411e4a55-4e59-7757-41f0-86a53f101bb5/displayicon.png',
     },
   };
+
   return t[uuid] || null;
 }
 
 // ===== SKIN DETAIL MODAL =====
 function openSkinModal(skin, weaponName) {
   const overlay = $('#modalOverlay');
+
   $('#modalImage').src = skin.displayIcon || '';
   $('#modalTitle').textContent = skin.displayName;
   $('#modalWeapon').textContent = weaponName;
@@ -1042,6 +1491,7 @@ function openSkinModal(skin, weaponName) {
   const videoSection = $('#modalVideoSection');
   const tabsContainer = $('#videoLevelTabs');
   const lvlVid = (skin.levels || []).filter((l) => l.streamedVideo);
+
   if (lvlVid.length > 0) {
     videoSection.style.display = 'block';
     tabsContainer.innerHTML = lvlVid
@@ -1053,10 +1503,14 @@ function openSkinModal(skin, weaponName) {
               .replace(/([A-Z])/g, ' $1')
               .trim()
           : '';
-        return `<button class="video-level-tab ${i === 0 ? 'active' : ''}" data-video-url="${l.streamedVideo}"><span class="tab-level-num">${li + 1}</span><span>${type || l.displayName || `Level ${li + 1}`}</span></button>`;
+        return `<button class="video-level-tab ${i === 0 ? 'active' : ''}" data-video-url="${
+          l.streamedVideo
+        }"><span class="tab-level-num">${li + 1}</span><span>${type || l.displayName || `Level ${li + 1}`}</span></button>`;
       })
       .join('');
+
     loadVideo(lvlVid[0].streamedVideo);
+
     tabsContainer.querySelectorAll('.video-level-tab').forEach((tab) => {
       tab.addEventListener('click', () => {
         tabsContainer
@@ -1071,32 +1525,46 @@ function openSkinModal(skin, weaponName) {
   }
 
   // Chromas
-  const chromasC = $('#modalChromas'),
-    chromasG = $('#chromasGrid');
+  const chromasC = $('#modalChromas');
+  const chromasG = $('#chromasGrid');
+
   if (skin.chromas && skin.chromas.length > 1) {
     chromasC.style.display = 'block';
+
     chromasG.innerHTML = skin.chromas
       .map((ch, i) => {
         const img = ch.displayIcon || ch.fullRender || skin.displayIcon || '';
         const sw = ch.swatch ? `background-image:url(${ch.swatch})` : '';
-        return `<div class="chroma-item ${i === 0 ? 'active' : ''}" data-img="${img}">${ch.swatch ? `<div class="chroma-swatch" style="${sw};background-size:cover"></div>` : ''}<img src="${img}" alt="${ch.displayName}" loading="lazy" onerror="this.style.display='none'"><span>${ch.displayName.replace(skin.displayName, '').trim() || 'Default'}</span></div>`;
+        return `
+          <div class="chroma-item ${i === 0 ? 'active' : ''}" data-img="${img}">
+            ${
+              ch.swatch
+                ? `<div class="chroma-swatch" style="${sw};background-size:cover"></div>`
+                : ''
+            }
+            <img src="${img}" alt="${ch.displayName}" loading="lazy" onerror="this.style.display='none'">
+            <span>${ch.displayName.replace(skin.displayName, '').trim() || 'Default'}</span>
+          </div>
+        `;
       })
       .join('');
+
     chromasG.querySelectorAll('.chroma-item').forEach((item) => {
       item.addEventListener('click', () => {
         chromasG.querySelectorAll('.chroma-item').forEach((c) => c.classList.remove('active'));
         item.classList.add('active');
+
         const ni = item.dataset.img;
-        if (ni) {
-          const mi = $('#modalImage');
-          mi.style.opacity = '0';
-          mi.style.transform = 'scale(0.9)';
-          setTimeout(() => {
-            mi.src = ni;
-            mi.style.opacity = '1';
-            mi.style.transform = 'scale(1)';
-          }, 200);
-        }
+        if (!ni) return;
+
+        const mi = $('#modalImage');
+        mi.style.opacity = '0';
+        mi.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          mi.src = ni;
+          mi.style.opacity = '1';
+          mi.style.transform = 'scale(1)';
+        }, 200);
       });
     });
   } else {
@@ -1104,10 +1572,12 @@ function openSkinModal(skin, weaponName) {
   }
 
   // Levels
-  const levelsC = $('#modalLevels'),
-    levelsL = $('#levelsList');
+  const levelsC = $('#modalLevels');
+  const levelsL = $('#levelsList');
+
   if (skin.levels && skin.levels.length > 1) {
     levelsC.style.display = 'block';
+
     levelsL.innerHTML = skin.levels
       .map((l, i) => {
         const type = l.levelItem
@@ -1117,15 +1587,26 @@ function openSkinModal(skin, weaponName) {
               .trim()
           : '';
         const hv = !!l.streamedVideo;
-        return `<div class="level-item ${hv ? 'has-video' : ''}" ${hv ? `data-video="${l.streamedVideo}"` : ''}><div class="level-number">${i + 1}</div><div class="level-info"><div class="level-name">${l.displayName || `Level ${i + 1}`}</div>${type ? `<div class="level-type">${type}</div>` : ''}</div>${hv ? '<div class="level-video"><i class="fas fa-play-circle"></i></div>' : ''}</div>`;
+
+        return `
+          <div class="level-item ${hv ? 'has-video' : ''}" ${hv ? `data-video="${l.streamedVideo}"` : ''}>
+            <div class="level-number">${i + 1}</div>
+            <div class="level-info">
+              <div class="level-name">${l.displayName || `Level ${i + 1}`}</div>
+              ${type ? `<div class="level-type">${type}</div>` : ''}
+            </div>
+            ${hv ? '<div class="level-video"><i class="fas fa-play-circle"></i></div>' : ''}
+          </div>
+        `;
       })
       .join('');
+
     levelsL.querySelectorAll('.level-item[data-video]').forEach((item) => {
       item.addEventListener('click', () => {
         const url = item.dataset.video;
-        tabsContainer
-          .querySelectorAll('.video-level-tab')
-          .forEach((t) => t.classList.toggle('active', t.dataset.videoUrl === url));
+        tabsContainer.querySelectorAll('.video-level-tab').forEach((t) => {
+          t.classList.toggle('active', t.dataset.videoUrl === url);
+        });
         loadVideo(url);
         videoSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
@@ -1142,6 +1623,7 @@ function openSkinModal(skin, weaponName) {
 function closeSkinModal() {
   $('#modalOverlay').classList.remove('active');
   document.body.style.overflow = '';
+
   const v = $('#videoElement');
   if (v) {
     v.pause();
@@ -1150,18 +1632,87 @@ function closeSkinModal() {
 }
 
 function initModals() {
-  $('#modalClose').addEventListener('click', closeSkinModal);
-  $('#modalOverlay').addEventListener('click', (e) => {
+  $('#modalClose')?.addEventListener('click', closeSkinModal);
+  $('#modalOverlay')?.addEventListener('click', (e) => {
     if (e.target === $('#modalOverlay')) closeSkinModal();
   });
-  $('#weaponModalClose').addEventListener('click', closeWeaponModal);
-  $('#weaponModalOverlay').addEventListener('click', (e) => {
+
+  $('#weaponModalClose')?.addEventListener('click', closeWeaponModal);
+  $('#weaponModalOverlay')?.addEventListener('click', (e) => {
     if (e.target === $('#weaponModalOverlay')) closeWeaponModal();
   });
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeSkinModal();
       closeWeaponModal();
+    }
+  });
+}
+
+// ===== FAVORITES EXPORT/IMPORT/CLEAR =====
+function initFavoritesTools() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'application/json';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  document.addEventListener('click', async (e) => {
+    const exportBtn = e.target.closest('#favExportBtn');
+    const importBtn = e.target.closest('#favImportBtn');
+    const clearBtn = e.target.closest('#favClearBtn');
+
+    if (exportBtn) {
+      const data = JSON.stringify(state.favorites, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'valorant_favorites.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      showToast('Favorites exported', 'success', 1500);
+    }
+
+    if (importBtn) {
+      fileInput.value = '';
+      fileInput.click();
+    }
+
+    if (clearBtn) {
+      if (!confirm('Clear all favorites?')) return;
+      state.favorites = [];
+      saveFavorites();
+      renderWeapons();
+      showToast('Favorites cleared', 'success', 1500);
+    }
+  });
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      if (!Array.isArray(parsed) || !parsed.every((x) => typeof x === 'string')) {
+        throw new Error('Invalid favorites file');
+      }
+
+      const replace = confirm('Replace existing favorites?\nOK = replace\nCancel = merge');
+      state.favorites = replace ? parsed : Array.from(new Set([...state.favorites, ...parsed]));
+      saveFavorites();
+      renderWeapons();
+      showToast('Favorites imported', 'success', 1500);
+    } catch (err) {
+      console.error(err);
+      showToast('Import failed', 'error', 2000);
     }
   });
 }
@@ -1171,14 +1722,15 @@ function initSmoothScroll() {
     a.addEventListener('click', function (e) {
       const h = this.getAttribute('href');
       if (h === '#') return;
+
       const t = document.querySelector(h);
-      if (t) {
-        e.preventDefault();
-        window.scrollTo({
-          top: t.getBoundingClientRect().top + window.pageYOffset - 80,
-          behavior: 'smooth',
-        });
-      }
+      if (!t) return;
+
+      e.preventDefault();
+      window.scrollTo({
+        top: t.getBoundingClientRect().top + window.pageYOffset - 80,
+        behavior: 'smooth',
+      });
     });
   });
 }
@@ -1190,10 +1742,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initTiltEffect();
   initGlowBorder();
   initVideoPlayer();
+
+  applyStateFromURL();
   initNavbar();
+  initSort();
+  initUIActions();
+
   initModals();
   initSmoothScroll();
   initRetryHandlers();
   initFavoriteHandlers();
+  initFavoritesTools();
+
   loadData();
 });

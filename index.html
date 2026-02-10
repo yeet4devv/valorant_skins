@@ -247,6 +247,19 @@
           <span class="section-tag">WEAPONS</span>
           <h2 class="section-title">Weapon Skins</h2>
           <p class="section-subtitle">Select a weapon to explore all available skins</p>
+          <div class="section-controls">
+            <label class="sort-label">
+              Sort by
+              <select id="sortSelect" class="sort-select">
+                <option value="name">Name (A–Z)</option>
+                <option value="skins">Skin Count (High → Low)</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="skins-toolbar" id="skinsToolbar" aria-live="polite">
+          <div class="results-count" id="resultsCount"></div>
+          <div class="applied-filters" id="appliedFilters"></div>
         </div>
         <div class="weapons-grid" id="weaponsGrid">
           <div class="skeleton-card weapon-skeleton">
